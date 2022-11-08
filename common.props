@@ -1,0 +1,14 @@
+<Project>
+    <PropertyGroup>
+        <Product>HsNsH SuperMarket Catalog Service</Product>
+        <Authors>HsNsH A.S.</Authors>
+        <Description>HsNsH SuperMarket Catalog Service</Description>
+        <Copyright>2022</Copyright>
+        <PackageTags>HsNsH SuperMarket Catalog Service</PackageTags>
+        <PackageReleaseNotes>This is the initial release</PackageReleaseNotes>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Version>1.0.61</Version>
+        <LangVersion>latest</LangVersion>
+        <NoWarn>$(NoWarn);CS1591;CS1998;</NoWarn>
+    </PropertyGroup>
+</Project>
