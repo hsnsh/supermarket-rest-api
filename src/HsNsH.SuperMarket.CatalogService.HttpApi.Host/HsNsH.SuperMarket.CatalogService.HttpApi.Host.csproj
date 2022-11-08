@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <RootNamespace>HsNsH.SuperMarket.CatalogService</RootNamespace>
+        <Title>HsNsH SuperMarket Catalog Service</Title>
+        <Product>HsNsH SuperMarket Catalog Service</Product>
+        <Description>HsNsH SuperMarket Catalog Service</Description>
+        <Authors>HsNsH A.S.</Authors>
+        <Copyright>2022</Copyright>
+        <NoWarn>$(NoWarn);CS1591;CS1998;</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <SonarQubeSetting Include="sonar.coverage.exclusions">
+            <Value>
+                Migrations\**,
+                Data\**,
+                Models\Temp\**,
+                **\Program*.cs,
+                **\*Startup.cs
+            </Value>
+        </SonarQubeSetting>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Compile Remove="Logs\**"/>
+        <Content Remove="Logs\**"/>
+        <EmbeddedResource Remove="Logs\**"/>
+        <None Remove="Logs\**"/>
+    </ItemGroup>
+
+</Project>
