@@ -125,6 +125,78 @@ public class CategoriesControllerTests
         value.Should().BeEquivalentTo(expectedItem, opt => opt.ComparingByMembers<CategoryDto>());
     }
 
+    [Fact]
+    public async Task CreateCategoryAsync_WithInvalidParameters_ReturnsBadRequestWithErrorObject()
+    {
+        // Arrange
+        var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
+
+        // Act
+        var result = await controller.CreateCategoryAsync(null);
+
+        // Assert
+        VerifyBadRequestObjectResult(result, (int)HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateCategoryAsync_WithNullResponse_ThrowBusinessException()
+    {
+        // Arrange
+        _mockCategoryAppService.Setup(repo => repo.CreateAsync(It.IsAny<CategoryCreateDto>()))
+            .ReturnsAsync((CategoryDtoResponse)null!);
+
+        var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
+
+        // Act
+        Func<Task> act = async () => await controller.CreateCategoryAsync(new CategoryCreateDto());
+
+        // Assert
+        await act.Should().ThrowAsync<BusinessException>();
+    }
+
+    [Fact]
+    public async Task CreateCategoryAsync_WithErrorCategoryResponse_ReturnsBadRequestWithErrorObject()
+    {
+        // Arrange
+        var expectedStatus = (int)HttpStatusCode.Conflict;
+        _mockCategoryAppService.Setup(repo => repo.CreateAsync(It.IsAny<CategoryCreateDto>()))
+            .ReturnsAsync(new CategoryDtoResponse("Conflict error", expectedStatus));
+
+        var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
+
+        // Act
+        var result = await controller.CreateCategoryAsync(new CategoryCreateDto());
+
+        // Assert
+        VerifyBadRequestObjectResult(result, expectedStatus);
+    }
+
+
+    [Fact]
+    public async Task CreateCategoryAsync_WithCategoryToCreate_ReturnsCreatedCategory()
+    {
+        // Arrange
+        var itemToCreate = new CategoryCreateDto() { Name = Guid.NewGuid().ToString() };
+
+        var expectedStatus = (int)HttpStatusCode.Conflict;
+        _mockCategoryAppService.Setup(repo => repo.CreateAsync(It.IsAny<CategoryCreateDto>()))
+            .ReturnsAsync(new CategoryDtoResponse(new CategoryDto() { Id = Guid.NewGuid(), Name = itemToCreate.Name }));
+
+        var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
+
+        // Act
+        var result = await controller.CreateCategoryAsync(itemToCreate);
+
+        // Assert
+        result.Should().BeOfType<CreatedAtActionResult>();
+
+        var createdItem = (result as CreatedAtActionResult)?.Value as CategoryDto;
+        itemToCreate.Should().BeEquivalentTo(createdItem, opt => opt.ComparingByMembers<CategoryDto>().ExcludingMissingMembers());
+        createdItem?.Id.Should().NotBeEmpty();
+        // createdItem?.CreatedDate.Should().BeCloseTo(DateTimeOffset.UtcNow, new TimeSpan(0, 0, 1));
+    }
+
+
     private static CategoryDto CreateRandomItem()
     {
         return new CategoryDto { Id = Guid.NewGuid(), Name = Guid.NewGuid().ToString() };
