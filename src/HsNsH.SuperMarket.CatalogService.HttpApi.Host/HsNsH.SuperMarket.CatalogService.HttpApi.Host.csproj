@@ -14,7 +14,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3"/>
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
     </ItemGroup>
 
     <ItemGroup>
@@ -30,10 +30,20 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Compile Remove="Logs\**"/>
-        <Content Remove="Logs\**"/>
-        <EmbeddedResource Remove="Logs\**"/>
-        <None Remove="Logs\**"/>
+        <Compile Remove="Logs\**" />
+        <Content Remove="Logs\**" />
+        <EmbeddedResource Remove="Logs\**" />
+        <None Remove="Logs\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Application\Mapping" />
+      <Folder Include="Application\Services" />
+      <Folder Include="Domain\Models" />
+      <Folder Include="Domain\Repositories" />
+      <Folder Include="Domain\Shared\Enums" />
+      <Folder Include="Persistence\Contexts\Configurations" />
+      <Folder Include="Persistence\Repositories" />
     </ItemGroup>
 
 </Project>
