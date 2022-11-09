@@ -2,14 +2,15 @@ namespace HsNsH.SuperMarket.CatalogService.Application.Contracts.Communications;
 
 public abstract class BaseResponse
 {
+    public bool Success { get; }
     public string Message { get; }
-    public bool HasError { get; }
-    public bool IsInternalError { get; }
 
-    protected BaseResponse(string message, bool hasError, bool isInternalError = false)
+    public int Code { get; }
+
+    protected BaseResponse(bool success, string message, int code = 0)
     {
+        Success = success;
         Message = message;
-        HasError = hasError;
-        IsInternalError = isInternalError;
+        Code = code;
     }
 }

@@ -1,3 +1,6 @@
+using HsNsH.SuperMarket.CatalogService.Application.Contracts.Services;
+using HsNsH.SuperMarket.CatalogService.Application.Services;
+using HsNsH.SuperMarket.CatalogService.Filters;
 using Microsoft.OpenApi.Models;
 
 namespace HsNsH.SuperMarket.CatalogService
@@ -14,7 +17,15 @@ namespace HsNsH.SuperMarket.CatalogService
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddControllers();
+            services.AddControllers(options =>
+                {
+                    options.Filters.Add(typeof(CustomExceptionFilterAttribute));
+                })
+                // Added for functional tests
+                .AddApplicationPart(typeof(Startup).Assembly)
+                .AddJsonOptions(options => options.JsonSerializerOptions.WriteIndented = true);
+
+            services.AddTransient<ICategoryAppService, CategoryAppService>();
 
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(c =>

@@ -4,12 +4,12 @@ public abstract class BaseDtoResponse<T> : BaseResponse
 {
     public T Resource { get; }
 
-    protected BaseDtoResponse(T resource) : base(message: string.Empty, hasError: false)
+    protected BaseDtoResponse(T resource) : base(success: true, message: string.Empty)
     {
         Resource = resource;
     }
 
-    protected BaseDtoResponse(string message, bool isInternalError = false) : base(message, hasError: true, isInternalError)
+    protected BaseDtoResponse(string message, int code = 0) : base(success: false, message, code)
     {
         Resource = default;
     }

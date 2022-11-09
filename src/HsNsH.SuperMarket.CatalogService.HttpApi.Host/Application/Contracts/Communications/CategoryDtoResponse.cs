@@ -8,7 +8,7 @@ public class CategoryDtoResponse : BaseDtoResponse<CategoryDto>
     {
     }
 
-    public CategoryDtoResponse(string message, bool isInternalError = false) : base(message, isInternalError)
+    public CategoryDtoResponse(string message, int code = 0) : base(message, code)
     {
     }
 }

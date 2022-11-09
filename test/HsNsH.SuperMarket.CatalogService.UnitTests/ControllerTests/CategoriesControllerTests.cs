@@ -4,6 +4,7 @@ using HsNsH.SuperMarket.CatalogService.Application.Contracts.Communications;
 using HsNsH.SuperMarket.CatalogService.Application.Contracts.Dtos;
 using HsNsH.SuperMarket.CatalogService.Application.Contracts.Services;
 using HsNsH.SuperMarket.CatalogService.Controllers.v1;
+using HsNsH.SuperMarket.CatalogService.Domain.Shared.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -19,7 +20,7 @@ public class CategoriesControllerTests
     /// Test Function Implementation : UnitOfWork_StateUnderTest_ExpectedBehavior
     /// </summary>
     [Fact]
-    public async Task GetCategoriesAsync_WithNullResponse_ReturnsInternalErrorWithErrorObject()
+    public async Task GetCategoriesAsync_WithNullResponse_ThrowBusinessException()
     {
         // Arrange
         _mockCategoryAppService.Setup(service => service.GetListAsync())
@@ -28,10 +29,10 @@ public class CategoriesControllerTests
         var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
 
         // Act
-        var actualItems = await controller.GetCategoriesAsync();
+        Func<Task> act = async () => await controller.GetCategoriesAsync();
 
         // Assert
-        VerifyInternalErrorObjectResult(actualItems);
+        await act.Should().ThrowAsync<BusinessException>();
     }
 
     [Fact]
@@ -65,11 +66,11 @@ public class CategoriesControllerTests
         var result = await controller.GetCategoryByIdAsync(Guid.Empty);
 
         // Assert
-        VerifyBadRequestObjectResult(result);
+        VerifyBadRequestObjectResult(result, (int)HttpStatusCode.BadRequest);
     }
 
     [Fact]
-    public async Task GetCategoryByIdAsync_WithNullResponse_ReturnsInternalErrorWithErrorObject()
+    public async Task GetCategoryByIdAsync_WithNullResponse_ThrowBusinessException()
     {
         // Arrange
         _mockCategoryAppService.Setup(repo => repo.GetByIdAsync(It.IsAny<Guid>()))
@@ -78,18 +79,19 @@ public class CategoriesControllerTests
         var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
 
         // Act
-        var result = await controller.GetCategoryByIdAsync(Guid.NewGuid());
+        Func<Task> act = async () => await controller.GetCategoryByIdAsync(Guid.NewGuid());
 
         // Assert
-        VerifyInternalErrorObjectResult(result);
+        await act.Should().ThrowAsync<BusinessException>();
     }
 
     [Fact]
-    public async Task GetCategoryByIdAsync_WithErrorResponse_ReturnsBadRequestWithErrorObject()
+    public async Task GetCategoryByIdAsync_WithUnExistingCategoryResponse_ReturnsBadRequestWithErrorObject()
     {
         // Arrange
+        var expectedStatus = (int)HttpStatusCode.NotFound;
         _mockCategoryAppService.Setup(repo => repo.GetByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(new CategoryDtoResponse("Not found",false));
+            .ReturnsAsync(new CategoryDtoResponse("Not found", expectedStatus));
 
         var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
 
@@ -97,23 +99,7 @@ public class CategoriesControllerTests
         var result = await controller.GetCategoryByIdAsync(Guid.NewGuid());
 
         // Assert
-        VerifyBadRequestObjectResult(result);
-    }
-    
-    [Fact]
-    public async Task GetCategoryByIdAsync_WithInternalErrorResponse_ReturnsInternalErrorWithErrorObject()
-    {
-        // Arrange
-        _mockCategoryAppService.Setup(repo => repo.GetByIdAsync(It.IsAny<Guid>()))
-            .ReturnsAsync(new CategoryDtoResponse("dead lock",true));
-
-        var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
-
-        // Act
-        var result = await controller.GetCategoryByIdAsync(Guid.NewGuid());
-
-        // Assert
-        VerifyInternalErrorObjectResult(result);
+        VerifyBadRequestObjectResult(result, expectedStatus);
     }
 
     [Fact]
@@ -144,24 +130,7 @@ public class CategoriesControllerTests
         return new CategoryDto { Id = Guid.NewGuid(), Name = Guid.NewGuid().ToString() };
     }
 
-    private static void VerifyInternalErrorObjectResult(object result)
-    {
-        result.Should().BeOfType<ObjectResult>();
-
-        var statusCode = ((ObjectResult)result).StatusCode;
-        statusCode.Should().NotBeNull();
-        statusCode.Should().Be((int)HttpStatusCode.InternalServerError);
-
-        var value = ((ObjectResult)result).Value;
-        value.Should().NotBeNull();
-        value.Should().BeOfType<ErrorDto>();
-
-        var messages = ((ErrorDto)value!)?.Messages;
-        messages.Should().NotBeNull();
-        messages.Should().NotHaveCount(0);
-    }
-
-    private static void VerifyBadRequestObjectResult(object result)
+    private static void VerifyBadRequestObjectResult(object result, int? code = null)
     {
         result.Should().BeOfType<BadRequestObjectResult>();
 
@@ -172,5 +141,10 @@ public class CategoriesControllerTests
         var messages = ((ErrorDto)value!)?.Messages;
         messages.Should().NotBeNull();
         messages.Should().NotHaveCount(0);
+
+        if (!code.HasValue) return;
+        var statusCode = ((ErrorDto)value!)?.Code;
+        statusCode.Should().NotBeNullOrWhiteSpace();
+        statusCode.Should().Be(code.Value.ToString());
     }
 }

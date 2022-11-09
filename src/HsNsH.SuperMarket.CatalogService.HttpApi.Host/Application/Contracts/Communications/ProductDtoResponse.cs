@@ -8,7 +8,7 @@ public class ProductDtoResponse : BaseDtoResponse<ProductDto>
     {
     }
 
-    public ProductDtoResponse(string message, bool isInternalError = false) : base(message, isInternalError)
+    public ProductDtoResponse(string message, int code = 0) : base(message, code)
     {
     }
 }
