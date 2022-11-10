@@ -104,7 +104,7 @@ public class CategoriesController : CatalogServiceController
     // DELETE /categories/{id}
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(typeof(ErrorDto), (int)HttpStatusCode.BadRequest)]
-    [ProducesResponseType(typeof(CategoryDto), (int)HttpStatusCode.NoContent)]
+    [ProducesResponseType((int)HttpStatusCode.NoContent)]
     public async Task<IActionResult> DeleteCategoryAsync(Guid id)
     {
         if (id.Equals(Guid.Empty)) return BadRequest(new ErrorDto("Invalid id", ((int)HttpStatusCode.BadRequest).ToString()));

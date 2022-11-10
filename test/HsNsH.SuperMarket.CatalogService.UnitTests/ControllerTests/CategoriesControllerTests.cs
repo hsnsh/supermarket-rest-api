@@ -171,14 +171,12 @@ public class CategoriesControllerTests
         VerifyBadRequestObjectResult(result, expectedStatus);
     }
 
-
     [Fact]
     public async Task CreateCategoryAsync_WithCategoryToCreate_ReturnsCreatedCategory()
     {
         // Arrange
         var itemToCreate = new CategoryCreateDto() { Name = Guid.NewGuid().ToString() };
 
-        var expectedStatus = (int)HttpStatusCode.Conflict;
         _mockCategoryAppService.Setup(repo => repo.CreateAsync(It.IsAny<CategoryCreateDto>()))
             .ReturnsAsync(new CategoryDtoResponse(new CategoryDto() { Id = Guid.NewGuid(), Name = itemToCreate.Name }));
 
@@ -193,13 +191,153 @@ public class CategoriesControllerTests
         var createdItem = (result as CreatedAtActionResult)?.Value as CategoryDto;
         itemToCreate.Should().BeEquivalentTo(createdItem, opt => opt.ComparingByMembers<CategoryDto>().ExcludingMissingMembers());
         createdItem?.Id.Should().NotBeEmpty();
-        // createdItem?.CreatedDate.Should().BeCloseTo(DateTimeOffset.UtcNow, new TimeSpan(0, 0, 1));
+        // time-check => createdItem?.CreatedDate.Should().BeCloseTo(DateTimeOffset.UtcNow, new TimeSpan(0, 0, 1))
     }
 
+    [Theory]
+    [MemberData(nameof(GetInvalidInputForUpdate))]
+    public async Task UpdateCategoryAsync_WithInvalidParameters_ReturnsBadRequestWithErrorObject(Guid itemId, CategoryUpdateDto itemToUpdate)
+    {
+        // Arrange
+        var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
+
+        // Act
+        var result = await controller.UpdateCategoryAsync(itemId, itemToUpdate);
+
+        // Assert
+        VerifyBadRequestObjectResult(result, (int)HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task UpdateCategoryAsync_WithNullResponse_ThrowBusinessException()
+    {
+        // Arrange
+        _mockCategoryAppService.Setup(repo => repo.UpdateAsync(It.IsAny<Guid>(), It.IsAny<CategoryUpdateDto>()))
+            .ReturnsAsync((CategoryDtoResponse)null!);
+
+        var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
+
+        // Act
+        Func<Task> act = async () => await controller.UpdateCategoryAsync(Guid.NewGuid(), new CategoryUpdateDto());
+
+        // Assert
+        await act.Should().ThrowAsync<BusinessException>();
+    }
+
+    [Fact]
+    public async Task UpdateCategoryAsync_WithErrorCategoryResponse_ReturnsBadRequestWithErrorObject()
+    {
+        // Arrange
+        var expectedStatus = (int)HttpStatusCode.Conflict;
+        _mockCategoryAppService.Setup(repo => repo.UpdateAsync(It.IsAny<Guid>(), It.IsAny<CategoryUpdateDto>()))
+            .ReturnsAsync(new CategoryDtoResponse("Conflict error", expectedStatus));
+
+        var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
+
+        // Act
+        var result = await controller.UpdateCategoryAsync(Guid.NewGuid(), new CategoryUpdateDto());
+
+        // Assert
+        VerifyBadRequestObjectResult(result, expectedStatus);
+    }
+
+    [Fact]
+    public async Task UpdateCategoryAsync_WithCategoryToUpdate_ReturnsUpdatedCategory()
+    {
+        // Arrange
+        var updateId = Guid.NewGuid();
+        var itemToUpdate = new CategoryUpdateDto() { Name = Guid.NewGuid().ToString() };
+
+        _mockCategoryAppService.Setup(repo => repo.UpdateAsync(It.IsAny<Guid>(), It.IsAny<CategoryUpdateDto>()))
+            .ReturnsAsync(new CategoryDtoResponse(new CategoryDto() { Id = updateId, Name = itemToUpdate.Name }));
+
+        var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
+
+        // Act
+        var result = await controller.UpdateCategoryAsync(updateId, itemToUpdate);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+
+        var updatedItem = ((OkObjectResult)result!)?.Value;
+        updatedItem.Should().NotBeNull();
+        updatedItem.Should().BeOfType<CategoryDto>();
+        ((CategoryDto)updatedItem!).Id.Should().NotBeEmpty();
+        itemToUpdate.Should().BeEquivalentTo(updatedItem, opt => opt.ComparingByMembers<CategoryDto>().ExcludingMissingMembers());
+    }
+
+    [Fact]
+    public async Task DeleteCategoryAsync_WithInvalidParameters_ReturnsBadRequestWithErrorObject()
+    {
+        // Arrange
+        var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
+
+        // Act
+        var result = await controller.DeleteCategoryAsync(Guid.Empty);
+
+        // Assert
+        VerifyBadRequestObjectResult(result, (int)HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task DeleteCategoryAsync_WithNullResponse_ThrowBusinessException()
+    {
+        // Arrange
+        _mockCategoryAppService.Setup(repo => repo.DeleteAsync(It.IsAny<Guid>()))
+            .ReturnsAsync((BaseResponse)null!);
+
+        var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
+
+        // Act
+        Func<Task> act = async () => await controller.DeleteCategoryAsync(Guid.NewGuid());
+
+        // Assert
+        await act.Should().ThrowAsync<BusinessException>();
+    }
+
+    [Fact]
+    public async Task DeleteCategoryAsync_WithUnExistingCategoryResponse_ReturnsBadRequestWithErrorObject()
+    {
+        // Arrange
+        var expectedStatus = (int)HttpStatusCode.NotFound;
+        _mockCategoryAppService.Setup(repo => repo.DeleteAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(new CategoryDtoResponse("Not found", expectedStatus));
+
+        var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
+
+        // Act
+        var result = await controller.DeleteCategoryAsync(Guid.NewGuid());
+
+        // Assert
+        VerifyBadRequestObjectResult(result, expectedStatus);
+    }
+
+    [Fact]
+    public async Task DeleteCategoryAsync_WithExistingCategoryResponse_ReturnsNoContent()
+    {
+        // Arrange
+        _mockCategoryAppService.Setup(repo => repo.DeleteAsync(It.IsAny<Guid>()))
+            .ReturnsAsync(new BaseResponse(true, string.Empty));
+
+        var controller = new CategoriesController(_mockLogger.Object, _mockCategoryAppService.Object);
+
+        // Act
+        var result = await controller.DeleteCategoryAsync(Guid.NewGuid());
+
+        // Assert
+        result.Should().BeOfType<NoContentResult>();
+    }
 
     private static CategoryDto CreateRandomItem()
     {
         return new CategoryDto { Id = Guid.NewGuid(), Name = Guid.NewGuid().ToString() };
+    }
+
+    public static IEnumerable<object?[]> GetInvalidInputForUpdate()
+    {
+        yield return new object?[] { Guid.Empty, null };
+        yield return new object?[] { Guid.Empty, new CategoryUpdateDto() { Name = "Test" } };
+        yield return new object?[] { Guid.NewGuid(), null };
     }
 
     private static void VerifyBadRequestObjectResult(object result, int? code = null)
