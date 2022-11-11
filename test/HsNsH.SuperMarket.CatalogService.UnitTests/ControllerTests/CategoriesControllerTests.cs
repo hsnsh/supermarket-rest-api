@@ -39,7 +39,7 @@ public class CategoriesControllerTests
     public async Task GetCategoriesAsync_WithExistingCategories_ReturnsAllCategories()
     {
         // Arrange
-        var expectedItems = new[] { CreateRandomItem(), CreateRandomItem(), CreateRandomItem() };
+        var expectedItems = new[] { CreateRandomCategoryDto(), CreateRandomCategoryDto(), CreateRandomCategoryDto() };
         _mockCategoryAppService.Setup(service => service.GetListAsync())
             .ReturnsAsync(expectedItems.ToList());
 
@@ -106,7 +106,7 @@ public class CategoriesControllerTests
     public async Task GetCategoryByIdAsync_WithExistingCategoryResponse_ReturnsExpectedCategory()
     {
         // Arrange
-        var expectedItem = CreateRandomItem();
+        var expectedItem = CreateRandomCategoryDto();
         _mockCategoryAppService.Setup(repo => repo.GetByIdAsync(It.IsAny<Guid>()))
             .ReturnsAsync(new CategoryDtoResponse(expectedItem));
 
@@ -328,7 +328,7 @@ public class CategoriesControllerTests
         result.Should().BeOfType<NoContentResult>();
     }
 
-    private static CategoryDto CreateRandomItem()
+    private static CategoryDto CreateRandomCategoryDto()
     {
         return new CategoryDto { Id = Guid.NewGuid(), Name = Guid.NewGuid().ToString() };
     }

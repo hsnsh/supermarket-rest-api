@@ -1,6 +1,6 @@
 namespace HsNsH.SuperMarket.CatalogService.Application.Contracts.Communications;
 
-public class BaseResponse
+public class BaseResponse : IBaseResponse
 {
     public bool Success { get; }
     public string Message { get; }
