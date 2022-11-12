@@ -38,8 +38,6 @@ public class CategoryAppService : BaseAppService, ICategoryAppService
         }
         catch (Exception ex)
         {
-            //return TestFunc<List<CategoryDto>>(ex);
-            
             return ex switch
             {
                 BusinessException be => throw be,
@@ -53,18 +51,16 @@ public class CategoryAppService : BaseAppService, ICategoryAppService
     {
         try
         {
-            if (id.Equals(Guid.Empty)) throw new BusinessException(message: $"Invalid category id: {id.ToString()}");
+            if (id.Equals(Guid.Empty)) throw new BusinessException(message: $"Invalid id: {id.ToString()}");
 
             var category = await _categoryRepository.FindAsync(x => x.Id == id);
 
             return category == null
-                ? new CategoryDtoResponse($"No record found with category id {id.ToString()}", (int)HttpStatusCode.NotFound)
+                ? new CategoryDtoResponse($"No record found with id {id.ToString()}", (int)HttpStatusCode.NotFound)
                 : new CategoryDtoResponse(_mapper.Map<Category, CategoryDto>(category));
         }
         catch (Exception ex)
         {
-            //return TestFunc<CategoryDtoResponse>(ex);
-            
             return ex switch
             {
                 BusinessException be => new CategoryDtoResponse(be.Message, (int)HttpStatusCode.BadRequest),
@@ -76,16 +72,75 @@ public class CategoryAppService : BaseAppService, ICategoryAppService
 
     public async Task<CategoryDtoResponse> CreateAsync(CategoryCreateDto input)
     {
-        throw new NotImplementedException();
+        try
+        {
+            if (input == null) throw new BusinessException(message: $"Input parameter can not be null");
+
+            var newCategory = new Category() { Id = Guid.NewGuid(), Name = input.Name };
+
+            var createdCategory = await _categoryRepository.InsertAsync(newCategory, true);
+
+            return new CategoryDtoResponse(_mapper.Map<Category, CategoryDto>(createdCategory));
+        }
+        catch (Exception ex)
+        {
+            return ex switch
+            {
+                BusinessException be => new CategoryDtoResponse(be.Message, (int)HttpStatusCode.BadRequest),
+                DomainException de => new CategoryDtoResponse(de.Message, (int)HttpStatusCode.BadRequest),
+                _ => throw new BusinessException("AppServiceException", "An error occurred while processing", ex)
+            };
+        }
     }
 
     public async Task<CategoryDtoResponse> UpdateAsync(Guid id, CategoryUpdateDto input)
     {
-        throw new NotImplementedException();
+        try
+        {
+            if (id.Equals(Guid.Empty)) throw new BusinessException(message: $"Invalid id: {id.ToString()}");
+            if (input == null) throw new BusinessException(message: $"Input parameter can not be null");
+
+            var existingCategory = await _categoryRepository.FindAsync(x => x.Id == id);
+            if (existingCategory == null) return new CategoryDtoResponse($"No record found with id {id.ToString()}", (int)HttpStatusCode.NotFound);
+
+            existingCategory.Name = input.Name;
+
+            var updatedCategory = await _categoryRepository.UpdateAsync(existingCategory, true);
+
+            return new CategoryDtoResponse(_mapper.Map<Category, CategoryDto>(updatedCategory));
+        }
+        catch (Exception ex)
+        {
+            return ex switch
+            {
+                BusinessException be => new CategoryDtoResponse(be.Message, (int)HttpStatusCode.BadRequest),
+                DomainException de => new CategoryDtoResponse(de.Message, (int)HttpStatusCode.BadRequest),
+                _ => throw new BusinessException("AppServiceException", "An error occurred while processing", ex)
+            };
+        }
     }
 
     public async Task<BaseResponse> DeleteAsync(Guid id)
     {
-        throw new NotImplementedException();
+        try
+        {
+            if (id.Equals(Guid.Empty)) throw new BusinessException(message: $"Invalid id: {id.ToString()}");
+
+            var category = await _categoryRepository.FindAsync(x => x.Id == id);
+            if (category == null) return new BaseResponse(false, $"No record found with id {id.ToString()}", (int)HttpStatusCode.NotFound);
+
+            await _categoryRepository.DeleteAsync(category, true);
+
+            return new BaseResponse(true, "Successfully completed");
+        }
+        catch (Exception ex)
+        {
+            return ex switch
+            {
+                BusinessException be => new BaseResponse(false, be.Message, (int)HttpStatusCode.BadRequest),
+                DomainException de => new BaseResponse(false, de.Message, (int)HttpStatusCode.BadRequest),
+                _ => throw new BusinessException("AppServiceException", "An error occurred while processing", ex)
+            };
+        }
     }
 }

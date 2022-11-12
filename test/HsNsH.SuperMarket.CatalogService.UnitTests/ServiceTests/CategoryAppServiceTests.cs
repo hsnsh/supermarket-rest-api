@@ -16,6 +16,8 @@ namespace HsNsH.SuperMarket.CatalogService.UnitTests.ServiceTests;
 
 public class CategoryAppServiceTests
 {
+    #region Setup
+
     private readonly Mock<ILogger<CategoryAppService>> _mockLogger = new();
     private readonly Mock<ICategoryRepository> _mockCategoryRepository = new();
     private readonly IMapper _mapper;
@@ -29,6 +31,10 @@ public class CategoryAppServiceTests
         });
         _mapper = config.CreateMapper();
     }
+
+    #endregion
+
+    #region GetListAsync_Tests
 
     [Theory]
     [MemberData(nameof(GetAllExceptionsForThrowExceptionTests))]
@@ -102,7 +108,7 @@ public class CategoryAppServiceTests
     }
 
     [Fact]
-    public async Task GetListAsync_WithExistingCategories_ReturnsAllCategories()
+    public async Task GetListAsync_WithExistingResponse_ReturnsExpectedObject()
     {
         // Arrange
         var expectedItems = new[] { CreateRandomCategory(), CreateRandomCategory(), CreateRandomCategory() };
@@ -120,6 +126,10 @@ public class CategoryAppServiceTests
         expectedItems.Should().BeEquivalentTo(actualItems, opt =>
             opt.ComparingByMembers<CategoryDto>());
     }
+
+    #endregion
+
+    #region GetByIdAsync_Tests
 
     [Fact]
     public async Task GetByIdAsync_WithThrowUnHandledException_ThrowBusinessException()
@@ -149,7 +159,7 @@ public class CategoryAppServiceTests
 
     [Theory]
     [MemberData(nameof(GetHandledExceptionsForErrorResponseTests))]
-    public async Task GetByIdAsync_WithThrowHandledException_ReturnsObjectWithErrorDetails(object throwException)
+    public async Task GetByIdAsync_WithThrowHandledException_ReturnsErrorObject(object throwException)
     {
         // Arrange
         switch (throwException)
@@ -174,10 +184,11 @@ public class CategoryAppServiceTests
         result.Should().BeOfType<CategoryDtoResponse>();
         result.Success.Should().Be(false);
         result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Code.Should().Be((int)HttpStatusCode.BadRequest);
     }
 
     [Fact]
-    public async Task GetByIdAsync_WithInvalidParameters_ReturnsObjectWithErrorDetails()
+    public async Task GetByIdAsync_WithInvalidParameters_ReturnsErrorObject()
     {
         // Arrange
         var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
@@ -194,7 +205,7 @@ public class CategoryAppServiceTests
     }
 
     [Fact]
-    public async Task GetByIdAsync_WithUnExistingCategoryResponse_ReturnsObjectWithErrorDetails()
+    public async Task GetByIdAsync_WithUnExistingResponse_ReturnsErrorObject()
     {
         // Arrange
         _mockCategoryRepository.Setup(c => c.FindAsync(It.IsAny<Expression<Func<Category, bool>>>(), true))
@@ -214,7 +225,7 @@ public class CategoryAppServiceTests
     }
 
     [Fact]
-    public async Task GetByIdAsync_WithExistingCategoryResponse_ReturnsExpectedCategory()
+    public async Task GetByIdAsync_WithExistingResponse_ReturnsExpectedObject()
     {
         // Arrange
         var expectedItem = CreateRandomCategory();
@@ -238,9 +249,364 @@ public class CategoryAppServiceTests
         expectedItem.Should().BeEquivalentTo(value, opt => opt.ComparingByMembers<CategoryDto>());
     }
 
+    #endregion
+
+    #region CreateAsync_Tests
+
+    [Fact]
+    public async Task CreateAsync_WithThrowUnHandledException_ThrowBusinessException()
+    {
+        // Arrange
+        var throwException = new Exception("Error message detail", new Exception("Inner Error Message Detail"));
+        _mockCategoryRepository.Setup(c => c.InsertAsync(It.IsAny<Category>(), true))
+            .Throws(throwException);
+
+        var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
+
+        // Act
+        Func<Task> act = async () => await appService.CreateAsync(new CategoryCreateDto() { Name = Guid.NewGuid().ToString() });
+
+        // Assert
+        var result = await act.Should().ThrowAsync<BusinessException>();
+
+        // Application level exception
+        result.And.Code.Should().Be("AppServiceException");
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
+        // Source level exception
+        result.And.InnerException.Should().NotBeNull();
+        result.And.InnerException.Should().BeOfType<Exception>();
+        result.And.InnerException?.Message.Should().Be(throwException.Message);
+        result.And.InnerException?.InnerException.Should().Be(throwException.InnerException);
+    }
+
+    [Theory]
+    [MemberData(nameof(GetHandledExceptionsForErrorResponseTests))]
+    public async Task CreateAsync_WithThrowHandledException_ReturnsErrorObject(object throwException)
+    {
+        // Arrange
+        switch (throwException)
+        {
+            case DomainException de:
+                _mockCategoryRepository.Setup(c => c.InsertAsync(It.IsAny<Category>(), true))
+                    .Throws(de);
+                break;
+            default:
+                _mockCategoryRepository.Setup(c => c.InsertAsync(It.IsAny<Category>(), true))
+                    .Throws((BusinessException)throwException);
+                break;
+        }
+
+        var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
+
+        // Act
+        var result = await appService.CreateAsync(new CategoryCreateDto() { Name = Guid.NewGuid().ToString() });
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeOfType<CategoryDtoResponse>();
+        result.Success.Should().Be(false);
+        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Code.Should().Be((int)HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithInvalidParameters_ReturnsErrorObject()
+    {
+        // Arrange
+        var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
+
+        // Act
+        var result = await appService.CreateAsync(null);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeOfType<CategoryDtoResponse>();
+        result.Success.Should().Be(false);
+        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Code.Should().Be((int)HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task CreateAsync_WithValidParameters_ReturnsExpectedObject()
+    {
+        // Arrange
+        var createdId = Guid.NewGuid();
+        var itemToCreate = new CategoryCreateDto() { Name = Guid.NewGuid().ToString() };
+
+        _mockCategoryRepository.Setup(repo => repo.InsertAsync(It.IsAny<Category>(), true))
+            .ReturnsAsync(new Category() { Id = createdId, Name = itemToCreate.Name });
+
+        var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
+
+        // Act
+        var result = await appService.CreateAsync(itemToCreate);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeOfType<CategoryDtoResponse>();
+        result.Success.Should().Be(true);
+
+        var createdItem = result.Resource;
+        createdItem.Id.Should().Be(createdId);
+        createdItem.Should().BeEquivalentTo(itemToCreate, opt => opt.ComparingByMembers<CategoryDto>());
+    }
+
+    #endregion
+
+    #region UpdateAsync_Tests
+
+    [Fact]
+    public async Task UpdateAsync_WithThrowUnHandledException_ThrowBusinessException()
+    {
+        // Arrange
+        var throwException = new Exception("Error message detail", new Exception("Inner Error Message Detail"));
+        _mockCategoryRepository.Setup(c => c.FindAsync(It.IsAny<Expression<Func<Category, bool>>>(), true))
+            .Throws(throwException);
+
+        var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
+
+        // Act
+        Func<Task> act = async () => await appService.UpdateAsync(Guid.NewGuid(), new CategoryUpdateDto() { Name = Guid.NewGuid().ToString() });
+
+        // Assert
+        var result = await act.Should().ThrowAsync<BusinessException>();
+
+        // Application level exception
+        result.And.Code.Should().Be("AppServiceException");
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
+        // Source level exception
+        result.And.InnerException.Should().NotBeNull();
+        result.And.InnerException.Should().BeOfType<Exception>();
+        result.And.InnerException?.Message.Should().Be(throwException.Message);
+        result.And.InnerException?.InnerException.Should().Be(throwException.InnerException);
+    }
+
+    [Theory]
+    [MemberData(nameof(GetHandledExceptionsForErrorResponseTests))]
+    public async Task UpdateAsync_WithThrowHandledException_ReturnsErrorObject(object throwException)
+    {
+        // Arrange
+        switch (throwException)
+        {
+            case DomainException de:
+                _mockCategoryRepository.Setup(c => c.FindAsync(It.IsAny<Expression<Func<Category, bool>>>(), true))
+                    .Throws(de);
+                break;
+            default:
+                _mockCategoryRepository.Setup(c => c.FindAsync(It.IsAny<Expression<Func<Category, bool>>>(), true))
+                    .Throws((BusinessException)throwException);
+                break;
+        }
+
+        var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
+
+        // Act
+        var result = await appService.UpdateAsync(Guid.NewGuid(), new CategoryUpdateDto() { Name = Guid.NewGuid().ToString() });
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeOfType<CategoryDtoResponse>();
+        result.Success.Should().Be(false);
+        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Code.Should().Be((int)HttpStatusCode.BadRequest);
+    }
+
+    [Theory]
+    [MemberData(nameof(GetInvalidInputForUpdate))]
+    public async Task UpdateAsync_WithInvalidParameters_ReturnsErrorObject(Guid itemId, CategoryUpdateDto itemToUpdate)
+    {
+        // Arrange
+        var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
+
+        // Act
+        var result = await appService.UpdateAsync(itemId, itemToUpdate);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeOfType<CategoryDtoResponse>();
+        result.Success.Should().Be(false);
+        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Code.Should().Be((int)HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WithUnExistingResponse_ReturnsErrorObject()
+    {
+        // Arrange
+        _mockCategoryRepository.Setup(c => c.FindAsync(It.IsAny<Expression<Func<Category, bool>>>(), true))
+            .ReturnsAsync((Category)null!);
+
+        var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
+
+        // Act
+        var result = await appService.UpdateAsync(Guid.NewGuid(), new CategoryUpdateDto() { Name = Guid.NewGuid().ToString() });
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeOfType<CategoryDtoResponse>();
+        result.Success.Should().Be(false);
+        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Code.Should().Be((int)HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WithExistingResponse_ReturnsExpectedObject()
+    {
+        // Arrange
+        var updateId = Guid.NewGuid();
+        var itemToUpdate = new CategoryUpdateDto() { Name = Guid.NewGuid().ToString() };
+
+        _mockCategoryRepository.Setup(c => c.FindAsync(It.IsAny<Expression<Func<Category, bool>>>(), true))
+            .ReturnsAsync(CreateRandomCategory());
+
+        _mockCategoryRepository.Setup(repo => repo.UpdateAsync(It.IsAny<Category>(), true))
+            .ReturnsAsync(new Category() { Id = updateId, Name = itemToUpdate.Name });
+
+        var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
+
+        // Act
+        var result = await appService.UpdateAsync(updateId, itemToUpdate);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeOfType<CategoryDtoResponse>();
+        result.Success.Should().Be(true);
+
+        var updatedItem = result.Resource;
+        updatedItem.Id.Should().NotBeEmpty();
+        updatedItem.Should().BeEquivalentTo(itemToUpdate, opt => opt.ComparingByMembers<CategoryDto>());
+    }
+
+    #endregion
+
+    #region DeleteAsync_Tests
+
+    [Fact]
+    public async Task DeleteAsync_WithThrowUnHandledException_ThrowBusinessException()
+    {
+        // Arrange
+        var throwException = new Exception("Error message detail", new Exception("Inner Error Message Detail"));
+        _mockCategoryRepository.Setup(c => c.FindAsync(It.IsAny<Expression<Func<Category, bool>>>(), true))
+            .Throws(throwException);
+
+        var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
+
+        // Act
+        Func<Task> act = async () => await appService.DeleteAsync(Guid.NewGuid());
+
+        // Assert
+        var result = await act.Should().ThrowAsync<BusinessException>();
+
+        // Application level exception
+        result.And.Code.Should().Be("AppServiceException");
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
+        // Source level exception
+        result.And.InnerException.Should().NotBeNull();
+        result.And.InnerException.Should().BeOfType<Exception>();
+        result.And.InnerException?.Message.Should().Be(throwException.Message);
+        result.And.InnerException?.InnerException.Should().Be(throwException.InnerException);
+    }
+
+    [Theory]
+    [MemberData(nameof(GetHandledExceptionsForErrorResponseTests))]
+    public async Task DeleteAsync_WithThrowHandledException_ReturnsErrorObject(object throwException)
+    {
+        // Arrange
+        switch (throwException)
+        {
+            case DomainException de:
+                _mockCategoryRepository.Setup(c => c.FindAsync(It.IsAny<Expression<Func<Category, bool>>>(), true))
+                    .Throws(de);
+                break;
+            default:
+                _mockCategoryRepository.Setup(c => c.FindAsync(It.IsAny<Expression<Func<Category, bool>>>(), true))
+                    .Throws((BusinessException)throwException);
+                break;
+        }
+
+        var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
+
+        // Act
+        var result = await appService.DeleteAsync(Guid.NewGuid());
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeOfType<BaseResponse>();
+        result.Success.Should().Be(false);
+        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Code.Should().Be((int)HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WithInvalidParameters_ReturnsErrorObject()
+    {
+        // Arrange
+        var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
+
+        // Act
+        var result = await appService.DeleteAsync(Guid.Empty);
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeOfType<BaseResponse>();
+        result.Success.Should().Be(false);
+        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Code.Should().Be((int)HttpStatusCode.BadRequest);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WithUnExistingResponse_ReturnsErrorObject()
+    {
+        // Arrange
+        _mockCategoryRepository.Setup(c => c.FindAsync(It.IsAny<Expression<Func<Category, bool>>>(), true))
+            .ReturnsAsync((Category)null!);
+
+        var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
+
+        // Act
+        var result = await appService.DeleteAsync(Guid.NewGuid());
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeOfType<BaseResponse>();
+        result.Success.Should().Be(false);
+        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Code.Should().Be((int)HttpStatusCode.NotFound);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WithExistingResponse_ReturnsExpectedObject()
+    {
+        // Arrange
+        var expectedItem = CreateRandomCategory();
+        _mockCategoryRepository.Setup(c => c.FindAsync(It.IsAny<Expression<Func<Category, bool>>>(), true))
+            .ReturnsAsync(expectedItem);
+
+        var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
+
+        // Act
+        var result = await appService.DeleteAsync(Guid.NewGuid());
+
+        // Assert
+        result.Should().NotBeNull();
+        result.Should().BeOfType<BaseResponse>();
+        result.Success.Should().Be(true);
+    }
+
+    #endregion
+
+    #region Helper Functions
+
     private static Category CreateRandomCategory()
     {
         return new Category { Id = Guid.NewGuid(), Name = Guid.NewGuid().ToString() };
+    }
+
+    public static IEnumerable<object?[]> GetInvalidInputForUpdate()
+    {
+        yield return new object?[] { Guid.Empty, null };
+        yield return new object?[] { Guid.Empty, new CategoryUpdateDto() { Name = "Test" } };
+        yield return new object?[] { Guid.NewGuid(), null };
     }
 
     public static IEnumerable<object?[]> GetAllExceptionsForThrowExceptionTests()
@@ -257,4 +623,6 @@ public class CategoryAppServiceTests
         yield return new object?[] { new BusinessException("App:12345", "Invalid parameters", new DomainException("id is invalid")) };
         yield return new object?[] { new BusinessException("App:98765", "Data fetch error", new Exception("Dead lock")) };
     }
+
+    #endregion
 }

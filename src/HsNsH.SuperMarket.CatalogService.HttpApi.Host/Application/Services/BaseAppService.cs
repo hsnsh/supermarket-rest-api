@@ -8,8 +8,8 @@ public abstract class BaseAppService
     {
     }
 
-    protected static T TestFunc<T>(Exception ex) where T : class
-    {
-        return default;
-    }
+    // protected static T TestFunc<T>(Exception ex) where T : class
+    // {
+    //     return default;
+    // }
 }

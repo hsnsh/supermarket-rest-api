@@ -64,6 +64,18 @@ public class CategoriesController : CatalogServiceController
     {
         if (input == null) return BadRequest(new ErrorDto("Input parameter can not be null", ((int)HttpStatusCode.BadRequest).ToString()));
 
+        if (!ModelState.IsValid)
+        {
+            var errors =
+            (
+                from state in ModelState
+                from error in state.Value?.Errors
+                select error.ErrorMessage
+            ).ToList();
+
+            return BadRequest(new ErrorDto(errors, ((int)HttpStatusCode.BadRequest).ToString()));
+        }
+
         var response = await _categoryAppService.CreateAsync(input);
         if (response == null)
         {
@@ -86,6 +98,18 @@ public class CategoriesController : CatalogServiceController
     {
         if (id.Equals(Guid.Empty)) return BadRequest(new ErrorDto("Invalid id", ((int)HttpStatusCode.BadRequest).ToString()));
         if (input == null) return BadRequest(new ErrorDto("Input parameter can not be null", ((int)HttpStatusCode.BadRequest).ToString()));
+
+        if (!ModelState.IsValid)
+        {
+            var errors =
+            (
+                from state in ModelState
+                from error in state.Value?.Errors
+                select error.ErrorMessage
+            ).ToList();
+
+            return BadRequest(new ErrorDto(errors, ((int)HttpStatusCode.BadRequest).ToString()));
+        }
 
         var response = await _categoryAppService.UpdateAsync(id, input);
         if (response == null)
