@@ -23,6 +23,14 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="6.0.10"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.10"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.10"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="6.0.10"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="6.0.10"/>
+    </ItemGroup>
+
+    <ItemGroup>
         <SonarQubeSetting Include="sonar.coverage.exclusions">
             <Value>
                 Migrations\**,
@@ -39,11 +47,6 @@
         <Content Remove="Logs\**"/>
         <EmbeddedResource Remove="Logs\**"/>
         <None Remove="Logs\**"/>
-    </ItemGroup>
-
-    <ItemGroup>
-        <Folder Include="Persistence\Contexts\Configurations"/>
-        <Folder Include="Persistence\Repositories"/>
     </ItemGroup>
 
 </Project>

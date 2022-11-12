@@ -340,7 +340,7 @@ public class CategoriesControllerTests
         yield return new object?[] { Guid.NewGuid(), null };
     }
 
-    private static void VerifyBadRequestObjectResult(object result, int? code = null)
+    private static void VerifyBadRequestObjectResult(object result, int code)
     {
         result.Should().BeOfType<BadRequestObjectResult>();
 
@@ -352,9 +352,8 @@ public class CategoriesControllerTests
         messages.Should().NotBeNull();
         messages.Should().NotHaveCount(0);
 
-        if (!code.HasValue) return;
         var statusCode = ((ErrorDto)value!)?.Code;
         statusCode.Should().NotBeNullOrWhiteSpace();
-        statusCode.Should().Be(code.Value.ToString());
+        statusCode.Should().Be(code.ToString());
     }
 }

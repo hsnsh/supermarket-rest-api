@@ -1,5 +1,3 @@
-using HsNsH.SuperMarket.CatalogService.Application.Contracts.Communications;
-
 namespace HsNsH.SuperMarket.CatalogService.Application.Services;
 
 public abstract class BaseAppService

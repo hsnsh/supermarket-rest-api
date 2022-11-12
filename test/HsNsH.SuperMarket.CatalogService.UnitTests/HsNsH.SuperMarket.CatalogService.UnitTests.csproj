@@ -20,10 +20,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="DomainTests"/>
-    </ItemGroup>
-
-    <ItemGroup>
         <ProjectReference Include="..\..\src\HsNsH.SuperMarket.CatalogService.HttpApi.Host\HsNsH.SuperMarket.CatalogService.HttpApi.Host.csproj"/>
     </ItemGroup>
 

@@ -1,6 +1,11 @@
 using HsNsH.SuperMarket.CatalogService.Application.Contracts.Services;
+using HsNsH.SuperMarket.CatalogService.Application.Mapping;
 using HsNsH.SuperMarket.CatalogService.Application.Services;
+using HsNsH.SuperMarket.CatalogService.Domain.Repositories;
 using HsNsH.SuperMarket.CatalogService.Filters;
+using HsNsH.SuperMarket.CatalogService.Persistence.Contexts;
+using HsNsH.SuperMarket.CatalogService.Persistence.Repositories;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 
 namespace HsNsH.SuperMarket.CatalogService
@@ -25,7 +30,16 @@ namespace HsNsH.SuperMarket.CatalogService
                 .AddApplicationPart(typeof(Startup).Assembly)
                 .AddJsonOptions(options => options.JsonSerializerOptions.WriteIndented = true);
 
+            // Application Services
+            services.AddAutoMapper(typeof(CatalogServiceDtoModelToEntityModelProfile), typeof(CatalogServiceEntityModelToDtoModelProfile));
             services.AddTransient<ICategoryAppService, CategoryAppService>();
+
+            // Domain Services
+            services.AddDbContext<CatalogServiceDbContext>(options =>
+            {
+                options.UseInMemoryDatabase(Configuration.GetConnectionString("in-memory"));
+            });
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
 
             services.AddEndpointsApiExplorer();
             services.AddSwaggerGen(c =>
