@@ -361,6 +361,7 @@ AppCoverageReport.*
 /.dockerignore
 
 #SQL Lite runtime tmp files
+/data
 *.db-shm
 *.db-wal
 

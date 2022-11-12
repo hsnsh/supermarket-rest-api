@@ -1,6 +1,7 @@
 using HsNsH.SuperMarket.CatalogService.Application.Contracts.Services;
 using HsNsH.SuperMarket.CatalogService.Application.Mapping;
 using HsNsH.SuperMarket.CatalogService.Application.Services;
+using HsNsH.SuperMarket.CatalogService.Domain;
 using HsNsH.SuperMarket.CatalogService.Domain.Repositories;
 using HsNsH.SuperMarket.CatalogService.Filters;
 using HsNsH.SuperMarket.CatalogService.Persistence.Contexts;
@@ -37,8 +38,15 @@ namespace HsNsH.SuperMarket.CatalogService
             // Domain Services
             services.AddDbContext<CatalogServiceDbContext>(options =>
             {
-                options.UseInMemoryDatabase(Configuration.GetConnectionString("in-memory"));
+                // options.UseInMemoryDatabase("in-memory");
+                options.UseSqlite(Configuration.GetConnectionString(CatalogServiceDbProperties.ConnectionStringName), sqlOptions =>
+                {
+                    sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory");
+                    sqlOptions.MigrationsAssembly(typeof(Program).Assembly.GetName().Name);
+                });
             });
+
+
             services.AddScoped<ICategoryRepository, CategoryRepository>();
 
             services.AddEndpointsApiExplorer();

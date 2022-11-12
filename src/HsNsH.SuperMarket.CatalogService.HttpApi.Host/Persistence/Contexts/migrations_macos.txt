@@ -1,0 +1,6 @@
+cd src/HsNsH.SuperMarket.CatalogService.HttpApi.Host
+
+dotnet ef migrations add InitialCreate --context HsNsH.SuperMarket.CatalogService.Persistence.Contexts.CatalogServiceDbContext -o Persistence/Contexts/Migrations
+dotnet ef database remove --context HsNsH.SuperMarket.CatalogService.Persistence.Contexts.CatalogServiceDbContext
+dotnet ef database update --context HsNsH.SuperMarket.CatalogService.Persistence.Contexts.CatalogServiceDbContext
+
