@@ -29,7 +29,7 @@ public class CategoryAppService : BaseAppService, ICategoryAppService
     {
         try
         {
-            var itemList = await _categoryRepository.GetListAsync();
+            var itemList = await _categoryRepository.GetListAsync(sorting: nameof(Category.Name));
             if (itemList == null)
             {
                 throw new DomainException("An error occurred while retrieving data");

@@ -44,15 +44,15 @@ public class CategoryAppServiceTests
         switch (throwException)
         {
             case DomainException de:
-                _mockCategoryRepository.Setup(service => service.GetListAsync(false))
+                _mockCategoryRepository.Setup(service => service.GetListAsync(It.IsAny<string>(), It.IsAny<bool>()))
                     .Throws(de);
                 break;
             case BusinessException be:
-                _mockCategoryRepository.Setup(service => service.GetListAsync(false))
+                _mockCategoryRepository.Setup(service => service.GetListAsync(It.IsAny<string>(), It.IsAny<bool>()))
                     .Throws(be);
                 break;
             default:
-                _mockCategoryRepository.Setup(service => service.GetListAsync(false))
+                _mockCategoryRepository.Setup(service => service.GetListAsync(It.IsAny<string>(), It.IsAny<bool>()))
                     .Throws((Exception)throwException);
                 break;
         }
@@ -94,7 +94,7 @@ public class CategoryAppServiceTests
     public async Task GetListAsync_WithNullResponse_ThrowBusinessException()
     {
         // Arrange
-        _mockCategoryRepository.Setup(service => service.GetListAsync(false))
+        _mockCategoryRepository.Setup(service => service.GetListAsync(It.IsAny<string>(), It.IsAny<bool>()))
             .ReturnsAsync((List<Category>)null!);
 
         var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
@@ -112,7 +112,7 @@ public class CategoryAppServiceTests
     {
         // Arrange
         var expectedItems = new[] { CreateRandomCategory(), CreateRandomCategory(), CreateRandomCategory() };
-        _mockCategoryRepository.Setup(service => service.GetListAsync(false))
+        _mockCategoryRepository.Setup(service => service.GetListAsync(It.IsAny<string>(), It.IsAny<bool>()))
             .ReturnsAsync(expectedItems);
 
         var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);

@@ -30,7 +30,11 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
 
     public virtual async Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true)
     {
-        return await GetDbSet().Where(predicate).SingleOrDefaultAsync();
+        var queryable = includeDetails
+            ? await WithDetailsAsync()
+            : await GetQueryableAsync();
+
+        return await queryable.Where(predicate).SingleOrDefaultAsync();
     }
 
     public virtual async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true)
@@ -45,17 +49,30 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
         return entity;
     }
 
-    public virtual async Task<IEnumerable<TEntity>> GetListAsync(bool includeDetails = false)
+    public virtual async Task<IEnumerable<TEntity>> GetListAsync(string sorting = null, bool includeDetails = false)
     {
-        return await GetDbSet().ToListAsync();
+        var queryable = includeDetails
+            ? await WithDetailsAsync()
+            : await GetQueryableAsync();
+
+        return await queryable
+            .OrderByIf<TEntity, IQueryable<TEntity>>(!string.IsNullOrWhiteSpace(sorting), sorting)
+            .ToListAsync();
     }
 
-    public virtual async Task<IEnumerable<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, bool includeDetails = false)
+    public virtual async Task<IEnumerable<TEntity>> GetListAsync(Expression<Func<TEntity, bool>> predicate, string sorting = null, bool includeDetails = false)
     {
-        return await GetDbSet().Where(predicate).ToListAsync();
+        var queryable = includeDetails
+            ? await WithDetailsAsync()
+            : await GetQueryableAsync();
+
+        return await queryable
+            .Where(predicate)
+            .OrderByIf<TEntity, IQueryable<TEntity>>(!string.IsNullOrWhiteSpace(sorting), sorting)
+            .ToListAsync();
     }
 
-    public virtual async Task<List<TEntity>> GetPageListAsync(int skipCount, int maxResultCount, string sorting, bool includeDetails = false)
+    public virtual async Task<List<TEntity>> GetPageListAsync(int skipCount, int maxResultCount, string sorting = null, bool includeDetails = false)
     {
         var queryable = includeDetails
             ? await WithDetailsAsync()

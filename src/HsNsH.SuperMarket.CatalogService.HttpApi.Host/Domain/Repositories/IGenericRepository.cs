@@ -8,10 +8,10 @@ public interface IGenericRepository<TEntity> where TEntity : class
     Task<TEntity> FindAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeDetails = true);
     Task<TEntity> GetAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeDetails = true);
 
-    Task<IEnumerable<TEntity>> GetListAsync(bool includeDetails = false);
-    Task<IEnumerable<TEntity>> GetListAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeDetails = false);
+    Task<IEnumerable<TEntity>> GetListAsync(string sorting = null, bool includeDetails = false);
+    Task<IEnumerable<TEntity>> GetListAsync([NotNull] Expression<Func<TEntity, bool>> predicate, string sorting = null, bool includeDetails = false);
 
-    Task<List<TEntity>> GetPageListAsync(int skipCount, int maxResultCount, string sorting, bool includeDetails = false);
+    Task<List<TEntity>> GetPageListAsync(int skipCount, int maxResultCount, string sorting = null, bool includeDetails = false);
     Task<long> GetCountAsync();
 
     Task<TEntity> InsertAsync([NotNull] TEntity entity, bool autoSave = false);
