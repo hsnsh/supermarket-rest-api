@@ -6,6 +6,7 @@ using HsNsH.SuperMarket.CatalogService.Application.Contracts.Services;
 using HsNsH.SuperMarket.CatalogService.Domain.Models;
 using HsNsH.SuperMarket.CatalogService.Domain.Repositories;
 using HsNsH.SuperMarket.CatalogService.Domain.Shared.Exceptions;
+using HsNsH.SuperMarket.CatalogService.Domain.Shared.Extensions;
 
 namespace HsNsH.SuperMarket.CatalogService.Application.Services;
 
@@ -63,8 +64,8 @@ public class CategoryAppService : BaseAppService, ICategoryAppService
         {
             return ex switch
             {
-                BusinessException be => new CategoryDtoResponse(be.Message, (int)HttpStatusCode.BadRequest),
-                DomainException de => new CategoryDtoResponse(de.Message, (int)HttpStatusCode.BadRequest),
+                BusinessException be => new CategoryDtoResponse(be.GetMessages().ToList(), (int)HttpStatusCode.BadRequest),
+                DomainException de => new CategoryDtoResponse(de.GetMessages().ToList(), (int)HttpStatusCode.BadRequest),
                 _ => throw new BusinessException("AppServiceException", "An error occurred while processing", ex)
             };
         }
@@ -86,8 +87,8 @@ public class CategoryAppService : BaseAppService, ICategoryAppService
         {
             return ex switch
             {
-                BusinessException be => new CategoryDtoResponse(be.Message, (int)HttpStatusCode.BadRequest),
-                DomainException de => new CategoryDtoResponse(de.Message, (int)HttpStatusCode.BadRequest),
+                BusinessException be => new CategoryDtoResponse(be.GetMessages().ToList(), (int)HttpStatusCode.BadRequest),
+                DomainException de => new CategoryDtoResponse(de.GetMessages().ToList(), (int)HttpStatusCode.BadRequest),
                 _ => throw new BusinessException("AppServiceException", "An error occurred while processing", ex)
             };
         }
@@ -113,8 +114,8 @@ public class CategoryAppService : BaseAppService, ICategoryAppService
         {
             return ex switch
             {
-                BusinessException be => new CategoryDtoResponse(be.Message, (int)HttpStatusCode.BadRequest),
-                DomainException de => new CategoryDtoResponse(de.Message, (int)HttpStatusCode.BadRequest),
+                BusinessException be => new CategoryDtoResponse(be.GetMessages().ToList(), (int)HttpStatusCode.BadRequest),
+                DomainException de => new CategoryDtoResponse(de.GetMessages().ToList(), (int)HttpStatusCode.BadRequest),
                 _ => throw new BusinessException("AppServiceException", "An error occurred while processing", ex)
             };
         }
@@ -137,8 +138,8 @@ public class CategoryAppService : BaseAppService, ICategoryAppService
         {
             return ex switch
             {
-                BusinessException be => new BaseResponse(false, be.Message, (int)HttpStatusCode.BadRequest),
-                DomainException de => new BaseResponse(false, de.Message, (int)HttpStatusCode.BadRequest),
+                BusinessException be => new BaseResponse(false, be.GetMessages().ToList(), (int)HttpStatusCode.BadRequest),
+                DomainException de => new BaseResponse(false, de.GetMessages().ToList(), (int)HttpStatusCode.BadRequest),
                 _ => throw new BusinessException("AppServiceException", "An error occurred while processing", ex)
             };
         }

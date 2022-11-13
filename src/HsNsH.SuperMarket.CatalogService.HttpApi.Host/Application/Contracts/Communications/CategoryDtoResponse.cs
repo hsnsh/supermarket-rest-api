@@ -11,4 +11,8 @@ public class CategoryDtoResponse : BaseDtoResponse<CategoryDto>
     public CategoryDtoResponse(string message, int code = 0) : base(message, code)
     {
     }
+
+    public CategoryDtoResponse(IReadOnlyCollection<string> messages, int code = 0) : base(messages, code)
+    {
+    }
 }

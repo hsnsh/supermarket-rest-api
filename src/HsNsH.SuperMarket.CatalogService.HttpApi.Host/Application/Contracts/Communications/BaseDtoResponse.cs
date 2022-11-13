@@ -13,4 +13,9 @@ public abstract class BaseDtoResponse<T> : BaseResponse
     {
         Resource = default;
     }
+
+    protected BaseDtoResponse(IReadOnlyCollection<string> messages, int code = 0) : base(success: false, messages, code)
+    {
+        Resource = default;
+    }
 }

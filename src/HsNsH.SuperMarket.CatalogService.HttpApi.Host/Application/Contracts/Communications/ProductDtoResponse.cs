@@ -11,4 +11,8 @@ public class ProductDtoResponse : BaseDtoResponse<ProductDto>
     public ProductDtoResponse(string message, int code = 0) : base(message, code)
     {
     }
+
+    public ProductDtoResponse(IReadOnlyCollection<string> messages, int code = 0) : base(messages, code)
+    {
+    }
 }

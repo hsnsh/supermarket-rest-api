@@ -183,7 +183,7 @@ public class CategoryAppServiceTests
         result.Should().NotBeNull();
         result.Should().BeOfType<CategoryDtoResponse>();
         result.Success.Should().Be(false);
-        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Messages.Should().NotBeEmpty();
         result.Code.Should().Be((int)HttpStatusCode.BadRequest);
     }
 
@@ -200,7 +200,7 @@ public class CategoryAppServiceTests
         result.Should().NotBeNull();
         result.Should().BeOfType<CategoryDtoResponse>();
         result.Success.Should().Be(false);
-        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Messages.Should().NotBeEmpty();
         result.Code.Should().Be((int)HttpStatusCode.BadRequest);
     }
 
@@ -220,7 +220,7 @@ public class CategoryAppServiceTests
         result.Should().NotBeNull();
         result.Should().BeOfType<CategoryDtoResponse>();
         result.Success.Should().Be(false);
-        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Messages.Should().NotBeEmpty();
         result.Code.Should().Be((int)HttpStatusCode.NotFound);
     }
 
@@ -305,7 +305,7 @@ public class CategoryAppServiceTests
         result.Should().NotBeNull();
         result.Should().BeOfType<CategoryDtoResponse>();
         result.Success.Should().Be(false);
-        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Messages.Should().NotBeEmpty();
         result.Code.Should().Be((int)HttpStatusCode.BadRequest);
     }
 
@@ -322,7 +322,7 @@ public class CategoryAppServiceTests
         result.Should().NotBeNull();
         result.Should().BeOfType<CategoryDtoResponse>();
         result.Success.Should().Be(false);
-        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Messages.Should().NotBeEmpty();
         result.Code.Should().Be((int)HttpStatusCode.BadRequest);
     }
 
@@ -407,7 +407,7 @@ public class CategoryAppServiceTests
         result.Should().NotBeNull();
         result.Should().BeOfType<CategoryDtoResponse>();
         result.Success.Should().Be(false);
-        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Messages.Should().NotBeEmpty();
         result.Code.Should().Be((int)HttpStatusCode.BadRequest);
     }
 
@@ -425,7 +425,7 @@ public class CategoryAppServiceTests
         result.Should().NotBeNull();
         result.Should().BeOfType<CategoryDtoResponse>();
         result.Success.Should().Be(false);
-        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Messages.Should().NotBeEmpty();
         result.Code.Should().Be((int)HttpStatusCode.BadRequest);
     }
 
@@ -445,7 +445,7 @@ public class CategoryAppServiceTests
         result.Should().NotBeNull();
         result.Should().BeOfType<CategoryDtoResponse>();
         result.Success.Should().Be(false);
-        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Messages.Should().NotBeEmpty();
         result.Code.Should().Be((int)HttpStatusCode.NotFound);
     }
 
@@ -533,7 +533,7 @@ public class CategoryAppServiceTests
         result.Should().NotBeNull();
         result.Should().BeOfType<BaseResponse>();
         result.Success.Should().Be(false);
-        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Messages.Should().NotBeEmpty();
         result.Code.Should().Be((int)HttpStatusCode.BadRequest);
     }
 
@@ -550,7 +550,7 @@ public class CategoryAppServiceTests
         result.Should().NotBeNull();
         result.Should().BeOfType<BaseResponse>();
         result.Success.Should().Be(false);
-        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Messages.Should().NotBeEmpty();
         result.Code.Should().Be((int)HttpStatusCode.BadRequest);
     }
 
@@ -570,7 +570,7 @@ public class CategoryAppServiceTests
         result.Should().NotBeNull();
         result.Should().BeOfType<BaseResponse>();
         result.Success.Should().Be(false);
-        result.Message.Should().NotBeNullOrWhiteSpace();
+        result.Messages.Should().NotBeEmpty();
         result.Code.Should().Be((int)HttpStatusCode.NotFound);
     }
 

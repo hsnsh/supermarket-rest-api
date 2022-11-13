@@ -50,7 +50,7 @@ public class CategoriesController : CatalogServiceController
 
         if (!response.Success)
         {
-            return BadRequest(new ErrorDto(response.Message, response.Code.ToString()));
+            return BadRequest(new ErrorDto(response.Messages, response.Code.ToString()));
         }
 
         return Ok(response.Resource);
@@ -84,7 +84,7 @@ public class CategoriesController : CatalogServiceController
 
         if (!response.Success)
         {
-            return BadRequest(new ErrorDto(response.Message, response.Code.ToString()));
+            return BadRequest(new ErrorDto(response.Messages, response.Code.ToString()));
         }
 
         return CreatedAtAction("GetCategoryById", new { id = response.Resource.Id }, response.Resource);
@@ -119,7 +119,7 @@ public class CategoriesController : CatalogServiceController
 
         if (!response.Success)
         {
-            return BadRequest(new ErrorDto(response.Message, response.Code.ToString()));
+            return BadRequest(new ErrorDto(response.Messages, response.Code.ToString()));
         }
 
         return Ok(response.Resource);
@@ -141,7 +141,7 @@ public class CategoriesController : CatalogServiceController
 
         if (!response.Success)
         {
-            return BadRequest(new ErrorDto(response.Message, response.Code.ToString()));
+            return BadRequest(new ErrorDto(response.Messages, response.Code.ToString()));
         }
 
         return NoContent();

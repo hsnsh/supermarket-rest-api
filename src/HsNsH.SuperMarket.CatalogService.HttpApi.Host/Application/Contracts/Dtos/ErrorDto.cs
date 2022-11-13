@@ -5,20 +5,20 @@ public class ErrorDto
     public string Code { get; }
     public List<string> Messages { get; }
 
-    public ErrorDto(List<string> messages, string code = null)
+    public ErrorDto(IReadOnlyCollection<string> messages, string code = null)
     {
-        this.Code = code ?? string.Empty;
-        this.Messages = messages ?? new List<string>();
+        Code = code ?? string.Empty;
+        Messages = messages == null ? new List<string>() : messages.Where(x => !string.IsNullOrWhiteSpace(x)).ToList();
     }
 
     public ErrorDto(string message, string code = null)
     {
-        this.Code = code ?? string.Empty;
-        this.Messages = new List<string>();
+        Code = code ?? string.Empty;
+        Messages = new List<string>();
 
         if (!string.IsNullOrWhiteSpace(message))
         {
-            this.Messages.Add(message);
+            Messages.Add(message);
         }
     }
 }

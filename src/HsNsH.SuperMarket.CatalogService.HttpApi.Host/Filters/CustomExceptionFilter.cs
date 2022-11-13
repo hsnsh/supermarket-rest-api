@@ -1,6 +1,7 @@
 using System.Text.Json;
 using HsNsH.SuperMarket.CatalogService.Application.Contracts.Dtos;
 using HsNsH.SuperMarket.CatalogService.Domain.Shared.Exceptions;
+using HsNsH.SuperMarket.CatalogService.Domain.Shared.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
@@ -38,7 +39,7 @@ public class CustomExceptionFilterAttribute : ExceptionFilterAttribute
                 if (!string.IsNullOrWhiteSpace(be.Message)) messages.Add(be.Message);
                 if (be.InnerException != null && _env.IsDevelopment())
                 {
-                    messages = PopulateInnerExceptionErrors(messages, be.InnerException);
+                    messages.AddRange(be.InnerException.GetMessages());
                 }
 
                 break;
@@ -49,7 +50,7 @@ public class CustomExceptionFilterAttribute : ExceptionFilterAttribute
                 if (!string.IsNullOrWhiteSpace(de.Message)) messages.Add(de.Message);
                 if (de.InnerException != null && _env.IsDevelopment())
                 {
-                    messages = PopulateInnerExceptionErrors(messages, de.InnerException);
+                    messages.AddRange(de.InnerException.GetMessages());
                 }
 
                 break;
@@ -59,15 +60,14 @@ public class CustomExceptionFilterAttribute : ExceptionFilterAttribute
                 messages.Add("Internal Server Error");
                 if (_env.IsDevelopment())
                 {
-                    messages = PopulateInnerExceptionErrors(messages, context.Exception);
+                    messages.AddRange(context.Exception.GetMessages());
                 }
 
                 break;
             }
         }
-        
-        
-        
+
+
         //
         // return ex switch
         // {
@@ -75,24 +75,9 @@ public class CustomExceptionFilterAttribute : ExceptionFilterAttribute
         //     DomainException de => throw new BusinessException(nameof(DomainException), de.Message, de.InnerException),
         //     _ => throw new BusinessException("AppServiceException", "An error occurred while processing", ex)
         // };
-        
-        
-        
-        
+
 
         // Returning response
         context.Result = new ContentResult { Content = JsonSerializer.Serialize(new ErrorDto(messages, code)), StatusCode = StatusCodes.Status500InternalServerError, ContentType = "application/json" };
-    }
-
-    private static List<string> PopulateInnerExceptionErrors(List<string> source, Exception innerException)
-    {
-        var currentExc = innerException;
-        while (currentExc != null)
-        {
-            source.Add(currentExc.Message);
-            currentExc = currentExc.InnerException;
-        }
-
-        return source;
     }
 }

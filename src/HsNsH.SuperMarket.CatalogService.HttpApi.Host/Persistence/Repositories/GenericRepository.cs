@@ -19,7 +19,7 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
 
     public virtual async Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true)
     {
-        throw new NotImplementedException();
+        throw new Exception("Dead lock", new Exception("inner level 1 detail", new NotImplementedException()));
     }
 
     public virtual async Task<TEntity> GetAsync(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true)
