@@ -11,7 +11,7 @@ public interface IGenericRepository<TEntity> where TEntity : class
     Task<IEnumerable<TEntity>> GetListAsync(bool includeDetails = false);
     Task<IEnumerable<TEntity>> GetListAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool includeDetails = false);
 
-    Task<List<TEntity>> GetPageListAsync(int maxResultCount = int.MaxValue, int skipCount = 0, bool includeDetails = false);
+    Task<List<TEntity>> GetPageListAsync(int skipCount, int maxResultCount, string sorting, bool includeDetails = false);
     Task<long> GetCountAsync();
 
     Task<TEntity> InsertAsync([NotNull] TEntity entity, bool autoSave = false);
