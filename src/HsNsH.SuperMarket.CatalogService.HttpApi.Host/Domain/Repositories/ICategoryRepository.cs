@@ -4,7 +4,7 @@ namespace HsNsH.SuperMarket.CatalogService.Domain.Repositories;
 
 public interface ICategoryRepository : IGenericRepository<Category>
 {
-    Task<List<Category>> GetPageListWithFiltersAsync(
+    Task<IEnumerable<Category>> GetPageListWithFiltersAsync(
         string filterText = null,
         string name = null,
         string sorting = null,

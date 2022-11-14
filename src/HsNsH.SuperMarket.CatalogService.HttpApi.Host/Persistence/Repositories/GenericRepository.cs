@@ -13,7 +13,7 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
     private readonly TDbContext _dbContext;
     protected List<Expression<Func<TEntity, object>>> DefaultPropertySelector = null;
 
-    protected GenericRepository(TDbContext dbContext)
+    public GenericRepository(TDbContext dbContext)
     {
         _dbContext = dbContext;
     }
@@ -72,7 +72,7 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
             .ToListAsync();
     }
 
-    public virtual async Task<List<TEntity>> GetPageListAsync(int skipCount, int maxResultCount, string sorting = null, bool includeDetails = false)
+    public virtual async Task<IEnumerable<TEntity>> GetPageListAsync(int skipCount, int maxResultCount, string sorting = null, bool includeDetails = false)
     {
         var queryable = includeDetails
             ? await WithDetailsAsync()

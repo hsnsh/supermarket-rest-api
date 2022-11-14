@@ -28,6 +28,6 @@ public class CatalogServiceTestDbContext : CatalogServiceDbContext
         using var reader = new StreamReader(file);
         var json = reader.ReadToEnd();
         var data = JsonConvert.DeserializeObject<T[]>(json);
-        modelBuilder.Entity<T>().HasData(data);
+        if (data != null) modelBuilder.Entity<T>().HasData(data);
     }
 }

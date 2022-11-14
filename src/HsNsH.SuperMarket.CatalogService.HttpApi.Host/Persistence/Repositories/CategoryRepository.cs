@@ -16,7 +16,7 @@ public class CategoryRepository : GenericRepository<CatalogServiceDbContext, Cat
         DefaultPropertySelector = new List<Expression<Func<Category, object>>> { x => x.Products };
     }
 
-    public async Task<List<Category>> GetPageListWithFiltersAsync(string filterText = null
+    public async Task<IEnumerable<Category>> GetPageListWithFiltersAsync(string filterText = null
         , string name = null
         , string sorting = null, int maxResultCount = int.MaxValue, int skipCount = 0, bool includeDetails = false)
     {

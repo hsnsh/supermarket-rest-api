@@ -12,6 +12,7 @@ public class CatalogServiceDbContext : DbContext
     public CatalogServiceDbContext(DbContextOptions<CatalogServiceDbContext> options)
         : base(options)
     {
+        ChangeTracker.LazyLoadingEnabled = false;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

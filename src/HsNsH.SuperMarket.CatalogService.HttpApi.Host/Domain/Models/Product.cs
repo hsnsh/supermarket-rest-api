@@ -8,8 +8,7 @@ public class Product
     public string Name { get; set; }
     public short QuantityInPackage { get; set; }
     public EUnitOfMeasurement UnitOfMeasurement { get; set; }
-
     public Guid CategoryId { get; set; }
-    public Category Category { get; set; }
 
+    public virtual Category Category { get; set; }
 }

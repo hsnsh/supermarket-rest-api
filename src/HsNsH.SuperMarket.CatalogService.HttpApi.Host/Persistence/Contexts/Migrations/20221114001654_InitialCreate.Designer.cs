@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HsNsH.SuperMarket.CatalogService.Persistence.Contexts.Migrations
 {
     [DbContext(typeof(CatalogServiceDbContext))]
-    [Migration("20221112225009_InitialCreate")]
+    [Migration("20221114001654_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -28,7 +28,8 @@ namespace HsNsH.SuperMarket.CatalogService.Persistence.Contexts.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(30)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("Name");
 
                     b.HasKey("Id");
 
@@ -42,18 +43,22 @@ namespace HsNsH.SuperMarket.CatalogService.Persistence.Contexts.Migrations
                         .HasColumnType("TEXT");
 
                     b.Property<Guid>("CategoryId")
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("CategoryId");
 
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(50)
-                        .HasColumnType("TEXT");
+                        .HasColumnType("TEXT")
+                        .HasColumnName("Name");
 
                     b.Property<short>("QuantityInPackage")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("QuantityInPackage");
 
                     b.Property<byte>("UnitOfMeasurement")
-                        .HasColumnType("INTEGER");
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("UnitOfMeasurement");
 
                     b.HasKey("Id");
 
@@ -67,7 +72,7 @@ namespace HsNsH.SuperMarket.CatalogService.Persistence.Contexts.Migrations
                     b.HasOne("HsNsH.SuperMarket.CatalogService.Domain.Models.Category", "Category")
                         .WithMany("Products")
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");
