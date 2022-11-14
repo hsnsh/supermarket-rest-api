@@ -46,7 +46,14 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"hsnsh_supermarket-rest-api" /o:"hsnsh" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.dotcover.reportsPaths=dotCover.Output.html /d:sonar.cs.vstest.reportsPaths="TestResults.trx" /d:sonar.verbose=false /d:sonar.sourceEncoding=UTF-8
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"hsnsh_supermarket-rest-api" /o:"hsnsh" \
+           /d:sonar.login="${{ secrets.SONAR_TOKEN }}" \
+           /d:sonar.host.url="https://sonarcloud.io" \
+           /d:sonar.cs.dotcover.reportsPaths=dotCover.Output.html \
+           /d:sonar.cs.vstest.reportsPaths="/**/*.trx" \
+           /d:sonar.verbose=false /d:sonar.sourceEncoding=UTF-8
           dotnet build --no-incremental
-          dotnet dotcover test --dcReportType=HTML --logger "trx;LogFileName=./TestResults.trx"
+          dotnet test --collect "Code Coverage"
+          dotnet test -l:trx;LogFileName=.\TestResults.trx
+          dotnet dotcover test --dcReportType=HTML 
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
