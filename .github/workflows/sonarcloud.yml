@@ -1,4 +1,4 @@
-name: SonarCloud
+name: SonarCloudAction
 on:
   push:
     branches:
@@ -42,6 +42,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         shell: powershell
         run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"hsnsh_supermarket-rest-api" /o:"hsnsh" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+          .\.sonar\scanner\dotnet-sonarscanner begin /k:"hsnsh_supermarket-rest-api" /o:"hsnsh" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io" /d:sonar.cs.dotcover.reportsPaths="AppCoverageReport.html" /d:sonar.cs.vstest.reportsPaths="TestResults.trx" /d:sonar.verbose=false /d:sonar.sourceEncoding=UTF-8
+          dotnet restore
           dotnet build
+          dotnet dotcover test --no-build --dcReportType=HTML --dcOutput="AppCoverageReport.html" --logger "trx;LogFileName=./TestResults.trx"
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
