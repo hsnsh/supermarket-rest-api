@@ -12,7 +12,7 @@ dotnet sonarscanner end /d:sonar.login="8aa2f25d1517704269a3a7dbec37306615cd2eb7
 
 
 
-
+test commit 2
 
 <Project>
   <!-- See https://docs.sonarqube.org/7.2/AnalysisParameters.html -->
