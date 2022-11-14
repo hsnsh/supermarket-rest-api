@@ -38,6 +38,7 @@ public abstract class BaseRepositoryTests
             new() { Id = Guid.NewGuid(), Name = "Populate Category C" },
             new() { Id = Guid.NewGuid(), Name = "Populate Category D" },
             new() { Id = Guid.NewGuid(), Name = "Populate Category E" },
+            new() { Id = Guid.Parse("a03cf65c-edfc-4a23-90a8-112fd957fa5a"), Name = "Populate Category Test" },
         };
         await context.Categories.AddRangeAsync(categories);
 
@@ -57,6 +58,16 @@ public abstract class BaseRepositoryTests
             index++;
             await context.Products.AddAsync(product);
         }
+
+        var testProduct = new Product()
+        {
+            Id = Guid.Parse("b61cf65c-edfc-4a23-90a8-112fd957fab5"),
+            CategoryId = Guid.Parse("a03cf65c-edfc-4a23-90a8-112fd957fa5a"),
+            Name = $"Populate Product Test",
+            QuantityInPackage = 100,
+            UnitOfMeasurement = EUnitOfMeasurement.Unity
+        };
+        await context.Products.AddAsync(testProduct);
 
         await context.SaveChangesAsync();
     }
