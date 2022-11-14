@@ -16,13 +16,15 @@ public class CategoryRepositoryTests : BaseRepositoryTests
         var expectedCount = await context.Categories.CountAsync();
 
         // Act
-        var actualItems = await repository.GetPageListWithFiltersAsync(includeDetails: true);
+        var actualPageItems = await repository.GetPageListWithFiltersAsync(includeDetails: true);
+        var actualPageItemsCount = await repository.GetCountWithFiltersAsync();
 
         // Assert
-        var items = actualItems as Category[] ?? actualItems.ToArray();
+        var items = actualPageItems as Category[] ?? actualPageItems.ToArray();
         items.Should().BeOfType<Category[]>();
         items.Should().NotBeNull();
         items.Should().HaveCount(expectedCount);
+        actualPageItemsCount.Should().Be(expectedCount);
 
         // check include details
         items.Any(x => x.Products.Count > 0).Should().Be(true);

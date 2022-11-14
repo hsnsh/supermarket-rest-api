@@ -172,7 +172,7 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
         return GetDbSet().AsQueryable();
     }
 
-    public async Task<IQueryable<TEntity>> WithDetailsAsync()
+    protected async Task<IQueryable<TEntity>> WithDetailsAsync()
     {
         if (DefaultPropertySelector == null)
         {
@@ -182,21 +182,13 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
         return await WithDetailsAsync(DefaultPropertySelector?.ToArray());
     }
 
-    public async Task<IQueryable<TEntity>> WithDetailsAsync(params Expression<Func<TEntity, object>>[] propertySelectors)
+    protected async Task<IQueryable<TEntity>> WithDetailsAsync(params Expression<Func<TEntity, object>>[] propertySelectors)
     {
         return IncludeDetails(await GetQueryableAsync(), propertySelectors);
     }
 
-    private IQueryable<TEntity> IncludeDetails(IQueryable<TEntity> query, IReadOnlyCollection<Expression<Func<TEntity, object>>> propertySelectors)
+    private static IQueryable<TEntity> IncludeDetails(IQueryable<TEntity> query, IReadOnlyCollection<Expression<Func<TEntity, object>>> propertySelectors)
     {
-        if (propertySelectors != null && propertySelectors.Count > 0)
-        {
-            foreach (var propertySelector in propertySelectors)
-            {
-                query = query.Include(propertySelector);
-            }
-        }
-
-        return query;
+        return propertySelectors is not { Count: > 0 } ? query : propertySelectors.Aggregate(query, (current, propertySelector) => current.Include(propertySelector));
     }
 }
