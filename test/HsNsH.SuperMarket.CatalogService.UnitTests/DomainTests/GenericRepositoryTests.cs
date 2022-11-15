@@ -160,5 +160,39 @@ public class GenericRepositoryTests : BaseRepositoryTests
         }
     }
 
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(null, false)]
+    [InlineData($"{nameof(Product.Name)} desc", false)]
+    [InlineData($"{nameof(Product.Name)} asc", false)]
+    public async Task GetListAsync_WithFilter_ReturnsFilteredItems(string sorting, bool includeDetails)
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+        var expectedCount = await context.Products.CountAsync(x => x.Name.Contains("Populate"));
+
+        // Act
+        var actualItems = await repository.GetListAsync(x => x.Name.Contains("Populate"), sorting: sorting, includeDetails: includeDetails);
+
+        // Assert
+        var items = actualItems as Product[] ?? actualItems.ToArray();
+        items.Should().BeOfType<Product[]>();
+        items.Should().NotBeNull();
+        items.Should().HaveCount(expectedCount);
+
+        if (!string.IsNullOrWhiteSpace(sorting))
+        {
+            var expectedAscItemName = await context.Products.Where(x => x.Name.Contains("Populate")).OrderBy(x => x.Name).Select(x => x.Name).FirstAsync();
+            var expectedDescItemName = await context.Products.Where(x => x.Name.Contains("Populate")).OrderByDescending(x => x.Name).Select(x => x.Name).FirstAsync();
+            items[0].Name.Should().Be(sorting.Split(' ')[1].Equals("desc") ? expectedDescItemName : expectedAscItemName);
+        }
+
+        if (includeDetails)
+        {
+            items.Any(x => x.Category != null).Should().Be(true);
+        }
+    }
+
     #endregion
 }
