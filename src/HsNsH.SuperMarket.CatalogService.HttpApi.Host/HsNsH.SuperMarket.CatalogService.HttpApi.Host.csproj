@@ -36,18 +36,18 @@
         <PackageReference Include="JetBrains.Annotations" Version="2022.3.1"/>
     </ItemGroup>
 
-    <ItemGroup>
-        <SonarQubeSetting Include="sonar.coverage.exclusions">
-            <Value>
-                **\Migrations\**,
-                Data\**,
-                Filters\**,
-                Models\Temp\**,
-                **\Program*.cs,
-                **\*Startup.cs
-            </Value>
-        </SonarQubeSetting>
-    </ItemGroup>
+<!--    <ItemGroup>-->
+<!--        <SonarQubeSetting Include="sonar.coverage.exclusions">-->
+<!--            <Value>-->
+<!--                **\Migrations\**,-->
+<!--                Data\**,-->
+<!--                Filters\**,-->
+<!--                Models\Temp\**,-->
+<!--                **\Program*.cs,-->
+<!--                **\*Startup.cs-->
+<!--            </Value>-->
+<!--        </SonarQubeSetting>-->
+<!--    </ItemGroup>-->
 
     <ItemGroup>
         <Compile Remove="Logs\**"/>
