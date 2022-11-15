@@ -12,8 +12,8 @@ namespace HsNsH.SuperMarket.CatalogService.Application.Services;
 
 public class CategoryAppService : BaseAppService, ICategoryAppService
 {
-    private readonly ILogger<CategoryAppService> _logger;
     private readonly ICategoryRepository _categoryRepository;
+    private readonly ILogger<CategoryAppService> _logger;
     private readonly IMapper _mapper;
 
     public CategoryAppService(ILogger<CategoryAppService> logger
@@ -143,5 +143,25 @@ public class CategoryAppService : BaseAppService, ICategoryAppService
                 _ => throw new BusinessException("AppServiceException", "An error occurred while processing", ex)
             };
         }
+    }
+
+    public void Test1()
+    {
+        Console.WriteLine("Test1");
+    }
+
+    public void Test2()
+    {
+        Console.WriteLine("Test1");
+    }
+
+    public void Test3()
+    {
+        Console.WriteLine("Test1");
+    }
+
+    public void Test4()
+    {
+        Console.WriteLine("Test1");
     }
 }
