@@ -37,12 +37,29 @@
     </ItemGroup>
 
     <ItemGroup>
+        <SonarQubeSetting Include="sonar.cs.dotcover.reportsPaths">
+            <Value>
+                AppCoverageReport.html
+            </Value>
+        </SonarQubeSetting>
+        <SonarQubeSetting Include="sonar.cs.vstest.reportsPaths">
+            <Value>
+                TestResults/*.trx
+            </Value>
+        </SonarQubeSetting>
         <SonarQubeSetting Include="sonar.coverage.exclusions">
             <Value>
                 **\Migrations\**,
                 Data\**,
                 Filters\**,
                 Models\Temp\**,
+                **\Program*.cs,
+                **\*Startup.cs
+            </Value>
+        </SonarQubeSetting>
+        <SonarQubeSetting Include="sonar.cpd.exclusions">
+            <Value>
+                **\Migrations\**,
                 **\Program*.cs,
                 **\*Startup.cs
             </Value>
