@@ -12,7 +12,7 @@ public abstract class BaseRepositoryTests
 
     protected BaseRepositoryTests()
     {
-        var dbName = $"CatalogServiceTestDb_{DateTime.Now.ToFileTimeUtc()}";
+        var dbName = $"TestDb_{DateTime.Now.ToFileTimeUtc()}_{Guid.NewGuid().ToString("N")}";
         _dbContextOptions = new DbContextOptionsBuilder<CatalogServiceDbContext>()
             .EnableSensitiveDataLogging()
             .EnableDetailedErrors()

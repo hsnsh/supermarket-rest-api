@@ -11,13 +11,13 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace HsNsH.SuperMarket.CatalogService.Persistence.Contexts.Migrations
 {
     [DbContext(typeof(CatalogServiceDbContext))]
-    [Migration("20221114001654_InitialCreate")]
+    [Migration("20221115211530_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "6.0.10");
+            modelBuilder.HasAnnotation("ProductVersion", "6.0.11");
 
             modelBuilder.Entity("HsNsH.SuperMarket.CatalogService.Domain.Models.Category", b =>
                 {

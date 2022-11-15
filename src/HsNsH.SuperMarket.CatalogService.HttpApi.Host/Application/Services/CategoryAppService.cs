@@ -144,24 +144,4 @@ public class CategoryAppService : BaseAppService, ICategoryAppService
             };
         }
     }
-
-    public void Test1()
-    {
-        Console.WriteLine("Test1");
-    }
-
-    public void Test2()
-    {
-        Console.WriteLine("Test1");
-    }
-
-    public void Test3()
-    {
-        Console.WriteLine("Test1");
-    }
-
-    public void Test4()
-    {
-        Console.WriteLine("Test1");
-    }
 }
