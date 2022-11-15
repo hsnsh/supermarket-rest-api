@@ -5,9 +5,9 @@ on:
     branches:
       - master
       - dev
-      - feat/*
-      - hot/*
-      - rel/*
+      # - feat/*
+      # - hot/*
+      # - rel/*
   pull_request:
     types: [ opened, synchronize, reopened ]
   workflow_dispatch:
