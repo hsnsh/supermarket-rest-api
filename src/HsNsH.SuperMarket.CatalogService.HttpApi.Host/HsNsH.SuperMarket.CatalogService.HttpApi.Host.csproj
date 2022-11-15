@@ -50,9 +50,9 @@
         <SonarQubeSetting Include="sonar.coverage.exclusions">
             <Value>
                 **\Migrations\**,
+                **\Shared\**,
                 Data\**,
                 Filters\**,
-                Models\Temp\**,
                 **\Program*.cs,
                 **\*Startup.cs
             </Value>
@@ -60,6 +60,7 @@
         <SonarQubeSetting Include="sonar.cpd.exclusions">
             <Value>
                 **\Migrations\**,
+                **\Shared\**,
                 **\Program*.cs,
                 **\*Startup.cs
             </Value>
