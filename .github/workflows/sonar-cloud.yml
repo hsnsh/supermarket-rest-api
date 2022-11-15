@@ -68,4 +68,3 @@ jobs:
           dotnet build --no-incremental --no-restore --configuration release
           dotnet dotcover test --configuration release --dcReportType=HTML --dcOutput="AppCoverageReport.html" -r ./TestResults --logger "trx;LogFileName=testoutput.trx"
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
-          
