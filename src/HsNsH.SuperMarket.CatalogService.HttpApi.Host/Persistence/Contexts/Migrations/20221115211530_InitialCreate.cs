@@ -40,6 +40,7 @@ namespace HsNsH.SuperMarket.CatalogService.Persistence.Contexts.Migrations
                         principalTable: "Categories",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                    
                 });
 
             migrationBuilder.CreateIndex(

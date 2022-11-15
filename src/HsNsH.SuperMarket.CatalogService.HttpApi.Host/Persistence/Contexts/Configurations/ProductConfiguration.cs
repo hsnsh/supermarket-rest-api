@@ -18,7 +18,7 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
         builder.Property(p => p.QuantityInPackage).HasColumnName(nameof(Product.QuantityInPackage)).IsRequired();
         builder.Property(p => p.UnitOfMeasurement).HasColumnName(nameof(Product.UnitOfMeasurement)).IsRequired();
 
-        builder.Property(x => x.CategoryId).HasColumnName(nameof(Product.CategoryId));
+        builder.Property(x => x.CategoryId).HasColumnName(nameof(Product.CategoryId)).IsRequired();
 
         builder.HasOne<Category>(x => x.Category)
             .WithMany(x => x.Products)

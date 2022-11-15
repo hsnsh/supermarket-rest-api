@@ -12,8 +12,8 @@ namespace HsNsH.SuperMarket.CatalogService.Application.Services;
 
 public class CategoryAppService : BaseAppService, ICategoryAppService
 {
-    private readonly ILogger<CategoryAppService> _logger;
     private readonly ICategoryRepository _categoryRepository;
+    private readonly ILogger<CategoryAppService> _logger;
     private readonly IMapper _mapper;
 
     public CategoryAppService(ILogger<CategoryAppService> logger

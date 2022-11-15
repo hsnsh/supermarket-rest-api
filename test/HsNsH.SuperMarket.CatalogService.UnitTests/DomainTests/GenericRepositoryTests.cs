@@ -1,5 +1,6 @@
 using FluentAssertions;
 using HsNsH.SuperMarket.CatalogService.Domain.Models;
+using HsNsH.SuperMarket.CatalogService.Domain.Shared.Enums;
 using HsNsH.SuperMarket.CatalogService.Domain.Shared.Exceptions;
 using HsNsH.SuperMarket.CatalogService.Persistence.Repositories;
 using HsNsH.SuperMarket.CatalogService.UnitTests.DomainTests.TestBase;
@@ -24,6 +25,19 @@ public class GenericRepositoryTests : BaseRepositoryTests
 
         // Assert
         result.Should().Be(expectedCount);
+    }
+
+    #endregion
+
+    #region Helper Functions
+
+    private static Product CreateRandomProduct(Guid? id = null, Guid? categoryId = null)
+    {
+        var product = new Product { Name = Guid.NewGuid().ToString(), QuantityInPackage = 1, UnitOfMeasurement = EUnitOfMeasurement.Unity };
+        if (id.HasValue) product.Id = id.Value;
+        if (categoryId.HasValue) product.CategoryId = categoryId.Value;
+
+        return product;
     }
 
     #endregion
@@ -274,6 +288,116 @@ public class GenericRepositoryTests : BaseRepositoryTests
         if (includeDetails)
         {
             items.Any(x => x.Category != null).Should().Be(true);
+        }
+    }
+
+    #endregion
+
+    #region InsertAsync_Tests
+
+    [Fact]
+    public async Task InsertAsync_WithNullObject_ThrowArgumentNullException()
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+
+        // Act
+        Func<Task> act = async () => await repository.InsertAsync(null!, false);
+
+        // Assert
+        var result = await act.Should().ThrowAsync<Exception>();
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task InsertAsync_WithObjectToCreate_ReturnsCreatedObject(bool includeId, bool autoSave)
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+
+        var createdId = Guid.NewGuid();
+        var itemToCreate = CreateRandomProduct(id: includeId ? createdId : null, categoryId: Guid.NewGuid());
+
+        // Act
+        var createdItem = await repository.InsertAsync(itemToCreate, autoSave);
+
+        // Assert
+        createdItem.Should().NotBeNull();
+        createdItem.Should().BeOfType<Product>();
+        createdItem.Id.Should().NotBeEmpty();
+        itemToCreate.Should().BeEquivalentTo(createdItem, opt => opt.ComparingByValue<Product>());
+        if (includeId)
+        {
+            createdItem.Id.Should().Be(createdId);
+        }
+        else
+        {
+            createdId = itemToCreate.Id;
+        }
+
+        var entity = await context.Products.FirstOrDefaultAsync(x => x.Id.Equals(createdId));
+        if (autoSave)
+        {
+            entity.Should().NotBeNull();
+        }
+        else
+        {
+            entity.Should().BeNull();
+        }
+    }
+
+    #endregion
+
+    #region InsertManyAsync_Tests
+
+    [Fact]
+    public async Task InsertManyAsync_WithNullObject_ThrowException()
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+
+        // Act
+        Func<Task> act = async () => await repository.InsertManyAsync(null!, false);
+
+        // Assert
+        var result = await act.Should().ThrowAsync<Exception>();
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task InsertManyAsync_WithObjectListToCreate_ReturnsCreatedListObject(bool autoSave)
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+
+        var itemsToCreate = new[] { CreateRandomProduct(id: Guid.NewGuid()), CreateRandomProduct(id: Guid.NewGuid()) };
+
+        // Act
+        await repository.InsertManyAsync(itemsToCreate, autoSave);
+
+        // Assert
+        var ids = itemsToCreate.Select(x => x.Id).ToList();
+        var entity = await context.Products.Where(x => ids.Contains(x.Id)).ToArrayAsync();
+        if (autoSave)
+        {
+            entity.Should().NotBeNull();
+            entity.Should().BeOfType<Product[]>();
+            entity.Should().HaveCount(itemsToCreate.Length);
+            itemsToCreate.Should().BeEquivalentTo(entity, opt => opt.ComparingByValue<Product>());
+        }
+        else
+        {
+            entity.Should().BeEmpty();
         }
     }
 
