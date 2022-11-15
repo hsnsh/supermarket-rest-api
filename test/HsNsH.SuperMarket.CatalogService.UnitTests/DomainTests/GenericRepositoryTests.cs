@@ -9,6 +9,25 @@ namespace HsNsH.SuperMarket.CatalogService.UnitTests.DomainTests;
 
 public class GenericRepositoryTests : BaseRepositoryTests
 {
+    #region GetCountAsync_Tests
+
+    [Fact]
+    public async Task GetCountAsync_WithAllItems_ReturnsAllItemsCount()
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+        var expectedCount = await context.Products.LongCountAsync();
+
+        // Act
+        var result = await repository.GetCountAsync();
+
+        // Assert
+        result.Should().Be(expectedCount);
+    }
+
+    #endregion
+
     #region FindAsync_Tests
 
     [Fact]
@@ -185,6 +204,70 @@ public class GenericRepositoryTests : BaseRepositoryTests
         {
             var expectedAscItemName = await context.Products.Where(x => x.Name.Contains("Populate")).OrderBy(x => x.Name).Select(x => x.Name).FirstAsync();
             var expectedDescItemName = await context.Products.Where(x => x.Name.Contains("Populate")).OrderByDescending(x => x.Name).Select(x => x.Name).FirstAsync();
+            items[0].Name.Should().Be(sorting.Split(' ')[1].Equals("desc") ? expectedDescItemName : expectedAscItemName);
+        }
+
+        if (includeDetails)
+        {
+            items.Any(x => x.Category != null).Should().Be(true);
+        }
+    }
+
+    #endregion
+
+    #region GetPageListAsync_Tests
+
+    [Theory]
+    [InlineData(-1, 4, 4)]
+    [InlineData(0, -4, 0)]
+    [InlineData(0, 0, 0)]
+    [InlineData(0, 4, 4)]
+    [InlineData(1, -4, 0)]
+    [InlineData(1, 0, 0)]
+    [InlineData(1, 4, 4)]
+    [InlineData(1000000, 4, 0)] //page not found
+    public async Task GetPageListAsync_WithMaxResultAndSkipCount_ReturnsExpectedPageItems(int pageIndex, int pageSize, int expectedCount)
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+        var skipCount = pageIndex * pageSize;
+
+        // Act
+        var actualItems = await repository.GetPageListAsync(skipCount: skipCount, maxResultCount: pageSize, sorting: null, includeDetails: false);
+
+        // Assert
+        var items = actualItems as Product[] ?? actualItems.ToArray();
+        items.Should().BeOfType<Product[]>();
+        items.Should().NotBeNull();
+        items.Should().HaveCountLessThanOrEqualTo(expectedCount);
+    }
+
+    [Theory]
+    [InlineData(null, true)]
+    [InlineData(null, false)]
+    [InlineData($"{nameof(Product.Name)} desc", false)]
+    [InlineData($"{nameof(Product.Name)} asc", false)]
+    public async Task GetPageListAsync_WithSorting_ReturnsSortedItems(string sorting, bool includeDetails)
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+        var expectedCount = await context.Products.Skip(4).Take(4).CountAsync();
+
+        // Act
+        var actualItems = await repository.GetPageListAsync(skipCount: 4, maxResultCount: 4, sorting: sorting, includeDetails: includeDetails);
+
+        // Assert
+        var items = actualItems as Product[] ?? actualItems.ToArray();
+        items.Should().BeOfType<Product[]>();
+        items.Should().NotBeNull();
+        items.Should().HaveCount(expectedCount);
+
+        if (!string.IsNullOrWhiteSpace(sorting))
+        {
+            var expectedAscItemName = await context.Products.OrderBy(x => x.Name).Skip(4).Take(4).Select(x => x.Name).FirstAsync();
+            var expectedDescItemName = await context.Products.OrderByDescending(x => x.Name).Skip(4).Take(4).Select(x => x.Name).FirstAsync();
             items[0].Name.Should().Be(sorting.Split(' ')[1].Equals("desc") ? expectedDescItemName : expectedAscItemName);
         }
 
