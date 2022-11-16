@@ -20,7 +20,7 @@ public interface IGenericRepository<TEntity> where TEntity : class
     Task<TEntity> UpdateAsync([NotNull] TEntity entity, bool autoSave = false);
     Task UpdateManyAsync([NotNull] IEnumerable<TEntity> entities, bool autoSave = false);
 
-    Task DeleteAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool autoSave = false);
     Task DeleteAsync([NotNull] TEntity entity, bool autoSave = false);
     Task DeleteManyAsync([NotNull] IEnumerable<TEntity> entities, bool autoSave = false);
+    Task DeleteAsync([NotNull] Expression<Func<TEntity, bool>> predicate, bool autoSave = false);
 }

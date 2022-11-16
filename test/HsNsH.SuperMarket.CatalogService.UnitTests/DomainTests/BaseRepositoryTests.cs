@@ -8,20 +8,15 @@ namespace HsNsH.SuperMarket.CatalogService.UnitTests.DomainTests;
 
 public abstract class BaseRepositoryTests
 {
-    private readonly DbContextOptions<CatalogServiceDbContext> _dbContextOptions;
-
-    protected BaseRepositoryTests()
+    protected static async Task<CatalogServiceTestDbContext> CreateDefaultContextAsync()
     {
         var dbName = $"TestDb_{DateTime.Now.ToFileTimeUtc()}_{Guid.NewGuid().ToString("N")}";
-        _dbContextOptions = new DbContextOptionsBuilder<CatalogServiceDbContext>()
+        var dbContextOptions = new DbContextOptionsBuilder<CatalogServiceDbContext>()
             .EnableSensitiveDataLogging()
             .EnableDetailedErrors()
             .UseInMemoryDatabase(dbName).Options;
-    }
 
-    protected virtual async Task<CatalogServiceTestDbContext> CreateDefaultContextAsync()
-    {
-        var context = new CatalogServiceTestDbContext(_dbContextOptions);
+        var context = new CatalogServiceTestDbContext(dbContextOptions);
         await context.Database.EnsureCreatedAsync(); // Make sure the seeding process is finished!
         await PopulateDataAsync(context);
         return context;
@@ -31,14 +26,14 @@ public abstract class BaseRepositoryTests
     {
         var categories = new List<Category>()
         {
-            new() { Id = Guid.NewGuid(), Name = "AAAAAAAA Category" },
-            new() { Id = Guid.NewGuid(), Name = "ZZZZZZZZ Category" },
-            new() { Id = Guid.NewGuid(), Name = "Populate Category A" },
-            new() { Id = Guid.NewGuid(), Name = "Populate Category B" },
-            new() { Id = Guid.NewGuid(), Name = "Populate Category C" },
-            new() { Id = Guid.NewGuid(), Name = "Populate Category D" },
-            new() { Id = Guid.NewGuid(), Name = "Populate Category E" },
-            new() { Id = Guid.Parse("a03cf65c-edfc-4a23-90a8-112fd957fa5a"), Name = "Populate Category Test" },
+            new() { Name = "AAA Category" },
+            new() { Name = "ZZZ Category" },
+            new() { Name = "Populate Category A" },
+            new() { Name = "Populate Category B" },
+            new() { Name = "Populate Category C" },
+            new() { Name = "Populate Category D" },
+            new() { Name = "Populate Category E" },
+            new(Guid.Parse("a03cf65c-edfc-4a23-90a8-112fd957fa5a")) { Name = "Populate Category Test" },
         };
         await context.Categories.AddRangeAsync(categories);
 
@@ -46,27 +41,13 @@ public abstract class BaseRepositoryTests
 
         while (index <= 25)
         {
-            var product = new Product()
-            {
-                Id = Guid.NewGuid(),
-                CategoryId = categories[Random.Shared.Next(categories.Count)].Id,
-                Name = $"Populate Product {index}",
-                QuantityInPackage = 100,
-                UnitOfMeasurement = EUnitOfMeasurement.Unity
-            };
+            var product = new Product { CategoryId = categories[Random.Shared.Next(categories.Count)].Id, Name = $"Populate Product {index}", QuantityInPackage = 100, UnitOfMeasurement = EUnitOfMeasurement.Unity };
 
             index++;
             await context.Products.AddAsync(product);
         }
 
-        var testProduct = new Product()
-        {
-            Id = Guid.Parse("b61cf65c-edfc-4a23-90a8-112fd957fab5"),
-            CategoryId = Guid.Parse("a03cf65c-edfc-4a23-90a8-112fd957fa5a"),
-            Name = $"Populate Product Test",
-            QuantityInPackage = 100,
-            UnitOfMeasurement = EUnitOfMeasurement.Unity
-        };
+        var testProduct = new Product(Guid.Parse("b61cf65c-edfc-4a23-90a8-112fd957fab5")) { CategoryId = Guid.Parse("a03cf65c-edfc-4a23-90a8-112fd957fa5a"), Name = $"Populate Product Test", QuantityInPackage = 100, UnitOfMeasurement = EUnitOfMeasurement.Unity };
         await context.Products.AddAsync(testProduct);
 
         await context.SaveChangesAsync();

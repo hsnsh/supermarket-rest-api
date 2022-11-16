@@ -16,8 +16,8 @@ public class CatalogServiceTestDbContext : CatalogServiceDbContext
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Category>().HasData(
-            new Category() { Id = Guid.NewGuid(), Name = "Builder Category A" },
-            new Category() { Id = Guid.NewGuid(), Name = "Builder Category B" }
+            new Category { Name = "Builder Category A" },
+            new Category { Name = "Builder Category B" }
         );
 
         SeedTestData<Category>(modelBuilder, "../../../DomainTests/TestBase/Categories.json");
