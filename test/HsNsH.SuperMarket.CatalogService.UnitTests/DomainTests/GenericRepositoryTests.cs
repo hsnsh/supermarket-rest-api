@@ -33,8 +33,11 @@ public class GenericRepositoryTests : BaseRepositoryTests
 
     private static Product CreateRandomProduct(Guid? id = null, Guid? categoryId = null)
     {
-        var product = new Product { Name = Guid.NewGuid().ToString(), QuantityInPackage = 1, UnitOfMeasurement = EUnitOfMeasurement.Unity };
-        if (id.HasValue) product.Id = id.Value;
+        var product = new Product();
+        if (id.HasValue) product = new Product(id.Value);
+        product.Name = Guid.NewGuid().ToString();
+        product.QuantityInPackage = 1;
+        product.UnitOfMeasurement = EUnitOfMeasurement.Unity;
         if (categoryId.HasValue) product.CategoryId = categoryId.Value;
 
         return product;
@@ -71,7 +74,7 @@ public class GenericRepositoryTests : BaseRepositoryTests
 
         // Assert
         var result = await act.Should().ThrowAsync<Exception>();
-        result.And.Message.Should().Contain("Sequence contains more than one element");
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
     }
 
     [Theory]
@@ -114,7 +117,7 @@ public class GenericRepositoryTests : BaseRepositoryTests
 
         // Assert
         var result = await act.Should().ThrowAsync<DomainException>();
-        result.And.Message.Should().Contain("There is no such an entity");
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
     }
 
     [Fact]
@@ -129,7 +132,7 @@ public class GenericRepositoryTests : BaseRepositoryTests
 
         // Assert
         var result = await act.Should().ThrowAsync<Exception>();
-        result.And.Message.Should().Contain("Sequence contains more than one element");
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
     }
 
     [Theory]
@@ -296,14 +299,14 @@ public class GenericRepositoryTests : BaseRepositoryTests
     #region InsertAsync_Tests
 
     [Fact]
-    public async Task InsertAsync_WithNullObject_ThrowArgumentNullException()
+    public async Task InsertAsync_WithNullObject_ThrowException()
     {
         // Arrange
         var context = await CreateDefaultContextAsync();
         var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
 
         // Act
-        Func<Task> act = async () => await repository.InsertAsync(null!, false);
+        Func<Task> act = async () => await repository.InsertAsync(null!, autoSave: false);
 
         // Assert
         var result = await act.Should().ThrowAsync<Exception>();
@@ -364,7 +367,7 @@ public class GenericRepositoryTests : BaseRepositoryTests
         var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
 
         // Act
-        Func<Task> act = async () => await repository.InsertManyAsync(null!, false);
+        Func<Task> act = async () => await repository.InsertManyAsync(null!, autoSave: false);
 
         // Assert
         var result = await act.Should().ThrowAsync<Exception>();
@@ -398,6 +401,293 @@ public class GenericRepositoryTests : BaseRepositoryTests
         else
         {
             entity.Should().BeEmpty();
+        }
+    }
+
+    #endregion
+
+    #region UpdateAsync_Tests
+
+    [Fact]
+    public async Task UpdateAsync_WithNullObject_ThrowException()
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+
+        // Act
+        Func<Task> act = async () => await repository.UpdateAsync(null!, autoSave: false);
+
+        // Assert
+        var result = await act.Should().ThrowAsync<Exception>();
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task UpdateAsync_WithUnExistingItem_ThrowException()
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+        var updateItem = CreateRandomProduct(id: Guid.NewGuid(), categoryId: Guid.NewGuid());
+
+        // Act
+        Func<Task> act = async () => await repository.UpdateAsync(updateItem, true);
+
+        // Assert
+        var result = await act.Should().ThrowAsync<Exception>();
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UpdateAsync_WithObjectToUpdate_ReturnsUpdatedObject(bool autoSave)
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+
+        var updateId = Guid.Parse("b61cf65c-edfc-4a23-90a8-112fd957fab5");
+        var itemToUpdate = await context.Products.FindAsync(updateId);
+        itemToUpdate!.Name = Guid.NewGuid().ToString();
+        itemToUpdate.CategoryId = Guid.Empty;
+
+        // Act
+        var updatedItem = await repository.UpdateAsync(itemToUpdate, autoSave);
+
+        // Assert
+        updatedItem.Should().NotBeNull();
+        updatedItem.Should().BeOfType<Product>();
+        updatedItem.Id.Should().NotBeEmpty();
+        itemToUpdate.Should().BeEquivalentTo(updatedItem, opt => opt.ComparingByValue<Product>());
+
+        var entity = await context.Products.FirstAsync(x => x.Id.Equals(updateId));
+        var entry = context.Entry(entity);
+        if (autoSave)
+        {
+            entry.State.Should().Be(EntityState.Unchanged);
+            entity.Should().BeEquivalentTo(updatedItem, opt => opt.ComparingByValue<Product>());
+        }
+        else
+        {
+            entry.State.Should().Be(EntityState.Modified);
+        }
+    }
+
+    #endregion
+
+    #region UpdateManyAsync_Tests
+
+    [Fact]
+    public async Task UpdateManyAsync_WithNullObject_ThrowException()
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+
+        // Act
+        Func<Task> act = async () => await repository.UpdateManyAsync(null!, autoSave: false);
+
+        // Assert
+        var result = await act.Should().ThrowAsync<Exception>();
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task UpdateManyAsync_WithUnExistingItem_ThrowException()
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+        var itemsToUpdates = new[] { CreateRandomProduct(id: Guid.NewGuid()), CreateRandomProduct(id: Guid.NewGuid()) };
+
+        // Act
+        Func<Task> act = async () => await repository.UpdateManyAsync(itemsToUpdates, true);
+
+        // Assert
+        var result = await act.Should().ThrowAsync<Exception>();
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task UpdateManyAsync_WithObjectListToUpdate_ReturnsVoid(bool autoSave)
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+
+        var updateId = Guid.Parse("b61cf65c-edfc-4a23-90a8-112fd957fab5");
+        var itemToUpdate = await context.Products.FindAsync(updateId);
+        itemToUpdate!.Name = Guid.NewGuid().ToString();
+        itemToUpdate.CategoryId = Guid.Empty;
+
+        // Act
+        await repository.UpdateManyAsync(new[] { itemToUpdate }, autoSave);
+
+        // Assert
+        var entity = await context.Products.FirstAsync(x => x.Id.Equals(updateId));
+        var entry = context.Entry(entity);
+        if (autoSave)
+        {
+            entry.State.Should().Be(EntityState.Unchanged);
+            entity.Should().BeEquivalentTo(itemToUpdate, opt => opt.ComparingByValue<Product>());
+        }
+        else
+        {
+            entry.State.Should().Be(EntityState.Modified);
+        }
+    }
+
+    #endregion
+
+    #region DeleteAsync_Tests
+
+    [Fact]
+    public async Task DeleteAsync_WithNullObject_ThrowException()
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+
+        // Act
+        Func<Task> act = async () => await repository.DeleteAsync(entity: null!, autoSave: false);
+
+        // Assert
+        var result = await act.Should().ThrowAsync<Exception>();
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task DeleteAsync_WithUnExistingItem_ThrowException()
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+        var updateItem = CreateRandomProduct(id: Guid.NewGuid(), categoryId: Guid.NewGuid());
+
+        // Act
+        Func<Task> act = async () => await repository.DeleteAsync(updateItem, true);
+
+        // Assert
+        var result = await act.Should().ThrowAsync<Exception>();
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DeleteAsync_WithObjectToDelete_ReturnsVoid(bool autoSave)
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+
+        var deleteId = Guid.Parse("b61cf65c-edfc-4a23-90a8-112fd957fab5");
+        var itemToDelete = await context.Products.FindAsync(deleteId);
+
+        // Act
+        await repository.DeleteAsync(itemToDelete!, autoSave);
+
+        // Assert
+        var entity = await context.Products.FirstOrDefaultAsync(x => x.Id.Equals(deleteId));
+        if (autoSave)
+        {
+            entity.Should().BeNull();
+        }
+        else
+        {
+            entity.Should().NotBeNull();
+        }
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DeleteAsync_WithPredicate_ReturnsVoid(bool autoSave)
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+
+        var deleteId = Guid.Parse("b61cf65c-edfc-4a23-90a8-112fd957fab5");
+
+        // Act
+        await repository.DeleteAsync(x => x.Id.Equals(deleteId), autoSave);
+
+        // Assert
+        var entity = await context.Products.FirstOrDefaultAsync(x => x.Id.Equals(deleteId));
+        if (autoSave)
+        {
+            entity.Should().BeNull();
+        }
+        else
+        {
+            entity.Should().NotBeNull();
+        }
+    }
+
+    #endregion
+
+    #region DeleteManyAsync_Tests
+
+    [Fact]
+    public async Task DeleteManyAsync_WithNullObject_ThrowException()
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+
+        // Act
+        Func<Task> act = async () => await repository.DeleteManyAsync(null!, autoSave: false);
+
+        // Assert
+        var result = await act.Should().ThrowAsync<Exception>();
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task DeleteManyAsync_WithUnExistingItem_ThrowException()
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+        var itemsToDelete = new[] { CreateRandomProduct(id: Guid.NewGuid()), CreateRandomProduct(id: Guid.NewGuid()) };
+
+        // Act
+        Func<Task> act = async () => await repository.DeleteManyAsync(itemsToDelete, true);
+
+        // Assert
+        var result = await act.Should().ThrowAsync<Exception>();
+        result.And.Message.Should().NotBeNullOrWhiteSpace();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DeleteManyAsync_WithObjectToDelete_ReturnsVoid(bool autoSave)
+    {
+        // Arrange
+        var context = await CreateDefaultContextAsync();
+        var repository = new GenericRepository<CatalogServiceTestDbContext, Product>(context);
+
+        var deleteId = Guid.Parse("b61cf65c-edfc-4a23-90a8-112fd957fab5");
+        var itemToDelete = await context.Products.FirstAsync(x => x.Id == deleteId);
+
+        // Act
+        await repository.DeleteManyAsync(new[] { itemToDelete }, autoSave);
+
+        // Assert
+        var entity = await context.Products.FirstOrDefaultAsync(x => x.Id.Equals(deleteId));
+        if (autoSave)
+        {
+            entity.Should().BeNull();
+        }
+        else
+        {
+            entity.Should().NotBeNull();
         }
     }
 

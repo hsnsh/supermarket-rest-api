@@ -264,7 +264,7 @@ public class CategoryAppServiceTests
         var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
 
         // Act
-        Func<Task> act = async () => await appService.CreateAsync(new CategoryCreateDto() { Name = Guid.NewGuid().ToString() });
+        Func<Task> act = async () => await appService.CreateAsync(new CategoryCreateDto { Name = Guid.NewGuid().ToString() });
 
         // Assert
         var result = await act.Should().ThrowAsync<BusinessException>();
@@ -299,7 +299,7 @@ public class CategoryAppServiceTests
         var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
 
         // Act
-        var result = await appService.CreateAsync(new CategoryCreateDto() { Name = Guid.NewGuid().ToString() });
+        var result = await appService.CreateAsync(new CategoryCreateDto { Name = Guid.NewGuid().ToString() });
 
         // Assert
         result.Should().NotBeNull();
@@ -331,10 +331,10 @@ public class CategoryAppServiceTests
     {
         // Arrange
         var createdId = Guid.NewGuid();
-        var itemToCreate = new CategoryCreateDto() { Name = Guid.NewGuid().ToString() };
+        var itemToCreate = new CategoryCreateDto { Name = Guid.NewGuid().ToString() };
 
         _mockCategoryRepository.Setup(repo => repo.InsertAsync(It.IsAny<Category>(), true))
-            .ReturnsAsync(new Category() { Id = createdId, Name = itemToCreate.Name });
+            .ReturnsAsync(new Category(createdId) { Name = itemToCreate.Name });
 
         var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
 
@@ -460,7 +460,7 @@ public class CategoryAppServiceTests
             .ReturnsAsync(CreateRandomCategory());
 
         _mockCategoryRepository.Setup(repo => repo.UpdateAsync(It.IsAny<Category>(), true))
-            .ReturnsAsync(new Category() { Id = updateId, Name = itemToUpdate.Name });
+            .ReturnsAsync(new Category(updateId) { Name = itemToUpdate.Name });
 
         var appService = new CategoryAppService(_mockLogger.Object, _mockCategoryRepository.Object, _mapper);
 
@@ -599,7 +599,7 @@ public class CategoryAppServiceTests
 
     private static Category CreateRandomCategory()
     {
-        return new Category { Id = Guid.NewGuid(), Name = Guid.NewGuid().ToString() };
+        return new Category { Name = Guid.NewGuid().ToString() };
     }
 
     public static IEnumerable<object?[]> GetInvalidInputForUpdate()

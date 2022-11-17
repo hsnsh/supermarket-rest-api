@@ -20,11 +20,11 @@ public static class Program
 
             var categories = new List<Category>()
             {
-                new() { Id = Guid.NewGuid(), Name = "Default Category A" },
-                new() { Id = Guid.NewGuid(), Name = "Default Category B" },
-                new() { Id = Guid.NewGuid(), Name = "Default Category C" },
-                new() { Id = Guid.NewGuid(), Name = "Default Category D" },
-                new() { Id = Guid.NewGuid(), Name = "Default Category E" },
+                new() { Name = "Default Category A" },
+                new() { Name = "Default Category B" },
+                new() { Name = "Default Category C" },
+                new() { Name = "Default Category D" },
+                new() { Name = "Default Category E" },
             };
             if (!context.Categories.Any())
             {

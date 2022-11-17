@@ -1,10 +1,13 @@
+using JetBrains.Annotations;
+
 namespace HsNsH.SuperMarket.CatalogService.Domain;
 
 public static class CatalogServiceDbProperties
 {
-    public static string DbTablePrefix { get; set; } = "";
+    public const string DbTablePrefix = "";
 
-    public static string DbSchema { get; set; } = null;
+    [CanBeNull]
+    public const string DbSchema = null;
 
     public const string ConnectionStringName = "CatalogService";
 }

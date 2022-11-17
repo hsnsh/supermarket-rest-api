@@ -18,16 +18,6 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
         _dbContext = dbContext;
     }
 
-    protected TDbContext GetDbContext()
-    {
-        return _dbContext;
-    }
-
-    protected DbSet<TEntity> GetDbSet()
-    {
-        return GetDbContext().Set<TEntity>();
-    }
-
     public virtual async Task<TEntity> FindAsync(Expression<Func<TEntity, bool>> predicate, bool includeDetails = true)
     {
         var queryable = includeDetails
@@ -95,7 +85,7 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
 
         if (autoSave)
         {
-            await _dbContext.SaveChangesAsync();
+            await GetDbContext().SaveChangesAsync();
         }
 
         return savedEntity;
@@ -103,23 +93,26 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
 
     public virtual async Task InsertManyAsync(IEnumerable<TEntity> entities, bool autoSave = false)
     {
-        await GetDbSet().AddRangeAsync(entities);
+        var entityArray = entities.ToArray();
+
+        await GetDbSet().AddRangeAsync(entityArray);
 
         if (autoSave)
         {
-            await _dbContext.SaveChangesAsync();
+            await GetDbContext().SaveChangesAsync();
         }
     }
 
     public virtual async Task<TEntity> UpdateAsync(TEntity entity, bool autoSave = false)
     {
-        _dbContext.Attach(entity);
+        var dbContext = GetDbContext();
+        dbContext.Attach(entity);
 
-        var updatedEntity = _dbContext.Update(entity).Entity;
+        var updatedEntity = dbContext.Update(entity).Entity;
 
         if (autoSave)
         {
-            await _dbContext.SaveChangesAsync();
+            await dbContext.SaveChangesAsync();
         }
 
         return updatedEntity;
@@ -131,19 +124,7 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
 
         if (autoSave)
         {
-            await _dbContext.SaveChangesAsync();
-        }
-    }
-
-    public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false)
-    {
-        var entities = await GetListAsync(predicate, includeDetails: false);
-
-        await DeleteManyAsync(entities, autoSave);
-
-        if (autoSave)
-        {
-            await _dbContext.SaveChangesAsync();
+            await GetDbContext().SaveChangesAsync();
         }
     }
 
@@ -153,18 +134,41 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
 
         if (autoSave)
         {
-            await _dbContext.SaveChangesAsync();
+            await GetDbContext().SaveChangesAsync();
+        }
+    }
+
+    public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false)
+    {
+        var entities = await GetDbSet().Where(predicate).ToListAsync();
+
+        await DeleteManyAsync(entities, autoSave);
+
+        if (autoSave)
+        {
+            await GetDbContext().SaveChangesAsync();
         }
     }
 
     public virtual async Task DeleteManyAsync(IEnumerable<TEntity> entities, bool autoSave = false)
     {
-        _dbContext.RemoveRange(entities);
+        GetDbContext().RemoveRange(entities);
 
         if (autoSave)
         {
-            await _dbContext.SaveChangesAsync();
+            await GetDbContext().SaveChangesAsync();
         }
+    }
+
+
+    protected TDbContext GetDbContext()
+    {
+        return _dbContext;
+    }
+
+    protected DbSet<TEntity> GetDbSet()
+    {
+        return GetDbContext().Set<TEntity>();
     }
 
     protected async Task<IQueryable<TEntity>> GetQueryableAsync()

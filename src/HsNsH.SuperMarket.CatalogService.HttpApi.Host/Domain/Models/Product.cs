@@ -2,9 +2,16 @@ using HsNsH.SuperMarket.CatalogService.Domain.Shared.Enums;
 
 namespace HsNsH.SuperMarket.CatalogService.Domain.Models;
 
-public class Product
+public class Product : Entity<Guid>
 {
-    public Guid Id { get; set; }
+    public Product() : base(Guid.NewGuid())
+    {
+    }
+
+    public Product(Guid id) : base(id)
+    {
+    }
+
     public string Name { get; set; }
     public short QuantityInPackage { get; set; }
     public EUnitOfMeasurement UnitOfMeasurement { get; set; }

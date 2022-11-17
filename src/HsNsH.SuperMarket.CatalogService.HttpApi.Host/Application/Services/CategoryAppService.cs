@@ -77,7 +77,7 @@ public class CategoryAppService : BaseAppService, ICategoryAppService
         {
             if (input == null) throw new BusinessException(message: $"Input parameter can not be null");
 
-            var newCategory = new Category() { Id = Guid.NewGuid(), Name = input.Name };
+            var newCategory = new Category { Name = input.Name };
 
             var createdCategory = await _categoryRepository.InsertAsync(newCategory, true);
 
