@@ -138,6 +138,18 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
         }
     }
 
+    public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false)
+    {
+        var entities = await GetDbSet().Where(predicate).ToListAsync();
+
+        await DeleteManyAsync(entities, autoSave);
+
+        if (autoSave)
+        {
+            await GetDbContext().SaveChangesAsync();
+        }
+    }
+
     public virtual async Task DeleteManyAsync(IEnumerable<TEntity> entities, bool autoSave = false)
     {
         GetDbContext().RemoveRange(entities);
@@ -148,17 +160,6 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
         }
     }
 
-    public virtual async Task DeleteAsync(Expression<Func<TEntity, bool>> predicate, bool autoSave = false)
-    {
-        var entities = await GetListAsync(predicate, includeDetails: false);
-
-        await DeleteManyAsync(entities, autoSave);
-
-        if (autoSave)
-        {
-            await GetDbContext().SaveChangesAsync();
-        }
-    }
 
     protected TDbContext GetDbContext()
     {

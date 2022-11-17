@@ -26,7 +26,7 @@ public class CategoryRepository : GenericRepository<CatalogServiceDbContext, Cat
 
         var query = ApplyFilter(queryable, filterText, name);
 
-        var sortingDesc = string.IsNullOrWhiteSpace(sorting) ? CategoryConsts.GetDefaultSorting(false) : sorting;
+        var sortingDesc = string.IsNullOrWhiteSpace(sorting) ? CategoryConsts.GetDefaultSorting() : sorting;
 
         return await query
             .OrderByIf(string.IsNullOrWhiteSpace(sortingDesc), sortingDesc)
