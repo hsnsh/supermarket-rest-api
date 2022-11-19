@@ -9,5 +9,9 @@ public class CatalogServiceDtoModelToEntityModelProfile : Profile
     public CatalogServiceDtoModelToEntityModelProfile()
     {
         CreateMap<CategoryDto, Category>();
+        CreateMap<CategoryWithNavigationsDto, Category>();
+
+        CreateMap<ProductDto, Product>();
+        CreateMap<ProductWithNavigationsDto, Product>();
     }
 }

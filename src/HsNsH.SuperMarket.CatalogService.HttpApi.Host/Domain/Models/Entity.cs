@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace HsNsH.SuperMarket.CatalogService.Domain.Models;
 
 [Serializable]
@@ -23,6 +25,7 @@ public abstract class Entity<TKey> : Entity, IEntity<TKey>
         Id = id;
     }
 
+    [Key]
     public TKey Id { get; private set; }
 
     public override object[] GetKeys()

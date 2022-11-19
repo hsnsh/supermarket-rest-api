@@ -9,5 +9,15 @@ public class CatalogServiceEntityModelToDtoModelProfile : Profile
     public CatalogServiceEntityModelToDtoModelProfile()
     {
         CreateMap<Category, CategoryDto>();
+        CreateMap<Category, CategoryWithNavigationsDto>()
+            .ForMember(dest => dest.Products,
+                opt =>
+                    opt.MapFrom(src => src.Products));
+
+        CreateMap<Product, ProductDto>();
+        CreateMap<Product, ProductWithNavigationsDto>()
+            .ForMember(dest => dest.Category,
+                opt =>
+                    opt.MapFrom(src => src.Category));
     }
 }

@@ -11,7 +11,6 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
     where TEntity : class
 {
     private readonly TDbContext _dbContext;
-    protected List<Expression<Func<TEntity, object>>> DefaultPropertySelector = null;
 
     public GenericRepository(TDbContext dbContext)
     {
@@ -160,6 +159,25 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
         }
     }
 
+    public virtual async Task EnsureCollectionWithExplicitLoadedAsync<TProperty>(TEntity entity,
+        Expression<Func<TEntity, IEnumerable<TProperty>>> propertyExpression)
+        where TProperty : class
+    {
+        await GetDbContext()
+            .Entry(entity)
+            .Collection(propertyExpression)
+            .LoadAsync();
+    }
+
+    public virtual async Task EnsurePropertyWithExplicitLoadedAsync<TProperty>(TEntity entity,
+        Expression<Func<TEntity, TProperty>> propertyExpression)
+        where TProperty : class
+    {
+        await GetDbContext()
+            .Entry(entity)
+            .Reference(propertyExpression)
+            .LoadAsync();
+    }
 
     protected TDbContext GetDbContext()
     {
@@ -178,12 +196,7 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
 
     protected async Task<IQueryable<TEntity>> WithDetailsAsync()
     {
-        if (DefaultPropertySelector == null)
-        {
-            return await GetQueryableAsync();
-        }
-
-        return await WithDetailsAsync(DefaultPropertySelector?.ToArray());
+        return await IncludeDefaultDetails(await GetQueryableAsync());
     }
 
     protected async Task<IQueryable<TEntity>> WithDetailsAsync(params Expression<Func<TEntity, object>>[] propertySelectors)
@@ -194,5 +207,17 @@ public class GenericRepository<TDbContext, TEntity> : IGenericRepository<TEntity
     private static IQueryable<TEntity> IncludeDetails(IQueryable<TEntity> query, IReadOnlyCollection<Expression<Func<TEntity, object>>> propertySelectors)
     {
         return propertySelectors is not { Count: > 0 } ? query : propertySelectors.Aggregate(query, (current, propertySelector) => current.Include(propertySelector));
+    }
+
+    private async Task<IQueryable<TEntity>> IncludeDefaultDetails(IQueryable<TEntity> query)
+    {
+        var dbContext = GetDbContext();
+
+        var navigations = dbContext?.Model.FindEntityType(typeof(TEntity))?
+            .GetDerivedTypesInclusive()
+            .SelectMany(type => type.GetNavigations())
+            .Distinct();
+
+        return navigations != null ? navigations.Aggregate(query, (current, property) => current.Include(property.Name)) : query;
     }
 }

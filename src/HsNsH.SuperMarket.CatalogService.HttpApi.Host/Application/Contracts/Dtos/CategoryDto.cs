@@ -1,7 +1,6 @@
 namespace HsNsH.SuperMarket.CatalogService.Application.Contracts.Dtos;
 
-public class CategoryDto
+public class CategoryDto : BaseDto<Guid>
 {
-    public Guid Id { get; set; }
     public string Name { get; set; }
 }
