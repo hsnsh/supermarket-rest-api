@@ -1,5 +1,4 @@
 using System.Globalization;
-using System.Linq.Expressions;
 using HsNsH.SuperMarket.CatalogService.Domain.Models;
 using HsNsH.SuperMarket.CatalogService.Domain.Repositories;
 using HsNsH.SuperMarket.CatalogService.Domain.Shared.Consts;
@@ -13,7 +12,6 @@ public class CategoryRepository : GenericRepository<CatalogServiceDbContext, Cat
 {
     public CategoryRepository(CatalogServiceDbContext dbContext) : base(dbContext)
     {
-        DefaultPropertySelector = new List<Expression<Func<Category, object>>> { x => x.Products };
     }
 
     public async Task<IEnumerable<Category>> GetPageListWithFiltersAsync(string filterText = null

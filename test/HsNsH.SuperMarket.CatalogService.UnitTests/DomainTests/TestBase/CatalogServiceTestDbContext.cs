@@ -9,6 +9,7 @@ public class CatalogServiceTestDbContext : CatalogServiceDbContext
 {
     public CatalogServiceTestDbContext(DbContextOptions<CatalogServiceDbContext> options) : base(options)
     {
+        base.ChangeTracker.LazyLoadingEnabled = false;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
