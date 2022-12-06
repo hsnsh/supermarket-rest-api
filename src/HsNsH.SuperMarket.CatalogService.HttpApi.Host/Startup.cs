@@ -14,12 +14,14 @@ namespace HsNsH.SuperMarket.CatalogService;
 
 public class Startup
 {
-    public Startup(IConfiguration configuration)
+    public Startup(IConfiguration configuration, IWebHostEnvironment env)
     {
         Configuration = configuration;
+        Environment = env;
     }
 
     private IConfiguration Configuration { get; }
+    private IWebHostEnvironment Environment { get; }
 
     // This method gets called by the runtime. Use this method to add services to the container.
     public void ConfigureServices(IServiceCollection services)
@@ -47,6 +49,10 @@ public class Startup
                 sqlOptions.MigrationsHistoryTable("__EFMigrationsHistory");
                 sqlOptions.MigrationsAssembly(typeof(Program).Assembly.GetName().Name);
             });
+            if (Environment.IsDevelopment())
+            {
+                options.EnableSensitiveDataLogging();
+            }
         });
 
 
